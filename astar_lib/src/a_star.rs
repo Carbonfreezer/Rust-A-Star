@@ -1,7 +1,7 @@
 
 use super::math_helper::Vec2;
 
-#[derive(Debug,Clone, Copy)]
+#[derive(Debug,Clone, Copy, PartialEq)]
 pub enum NodeState {
     Clear,
     Visited,
@@ -50,6 +50,44 @@ impl NavGraph {
             nodes: Vec::new(),
             links: Vec::new(),
         }
+    }
+
+    /// Checks if a link handed over is a solution link.
+    fn is_solution_link(&self, link : &(usize, usize)) -> bool {
+        (self.nodes[link.0].state == NodeState::Solution) && (self.nodes[link.1].state == NodeState::Solution)
+    }
+
+    pub fn get_all_solution_links(&self) -> impl Iterator<Item = &(usize, usize)>  {
+        self.links.iter().filter(|link| self.is_solution_link(*link))
+    }
+
+    pub fn get_all_simple_links(&self) -> impl Iterator<Item = &(usize, usize)>  {
+        self.links.iter().filter(|link| !self.is_solution_link(*link))
+    }
+
+
+    /// Finds the nearest node to the indicated position.
+    ///
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// use astar_lib::a_star::NavGraph;
+    /// let mut graph = NavGraph::new();
+    /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
+    /// let index = graph.find_nearest_node(Vec2::new(0.1, 0.0))
+    /// ```
+    pub fn find_nearest_node(&self, position : &Vec2) -> usize {
+        let mut min_dist = f32::MAX;
+        let mut best_index = 0usize;
+
+        for (index, node) in self.nodes.iter().enumerate() {
+            let dist =  node.position.dist_to(position);
+            if dist < min_dist {
+                min_dist = dist;
+                best_index = index;
+            }
+        }
+        best_index
     }
 
     /// Adds a position to the nav graph and returns a handle index that may be used for
@@ -126,6 +164,7 @@ impl NavGraph {
             self.nodes[scan].state = NodeState::Solution;
             scan = self.nodes[scan].ancestor_node;
         }
+        self.nodes[scan].state = NodeState::Solution;
         path.push(scan);
         path.reverse();
         path
@@ -246,6 +285,10 @@ mod tests {
 
         let result = result.unwrap();
         assert_eq!(result, [0,2,3]);
+        
+        for (source, destination) in graph.get_all_simple_links() {
+            println!("{:?} -> {:?}", source, destination);
+        }
 
 
 
