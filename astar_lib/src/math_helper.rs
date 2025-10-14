@@ -158,7 +158,7 @@ impl Line {
         let my = own_det / base_det;
         let lambda = other_det / base_det;
 
-        (my >= 0.0001) && (my <= 0.9999) && (lambda >= 0.0001 && lambda <= 0.9999)
+        (my >= 0.00001) && (my <= 0.99999) && (lambda >= 0.00001 && lambda <= 0.99999)
     }
 }
 
