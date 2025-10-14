@@ -77,6 +77,7 @@ impl Mul<Vec2> for f32 {
 pub struct Line {
     start: Vec2,
     end: Vec2,
+    delta : Vec2,
 }
 
 
@@ -88,7 +89,7 @@ impl Line {
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// ```
     pub fn new(start: Vec2, end: Vec2) -> Line {
-        Line { start, end }
+        Line { start, end, delta: end - start }
     }
     
     
@@ -100,7 +101,7 @@ impl Line {
     /// let length = line_a.length();
     /// ``` 
     pub fn length(&self) -> f32 {
-        (self.end - self.start).magnitude()
+        self.delta.magnitude()
     }
 
     /// Gets the start and end point of the line.
@@ -127,12 +128,11 @@ impl Line {
     /// let new_line = line_a.get_shortened_version(0.1);
     /// ``` 
     pub fn get_shortened_version(&self, shorting_distance: f32 ) -> Line {
-        let delta = self.end - self.start; 
-        let scaling_relation = shorting_distance / delta.magnitude();
+        let scaling_relation = shorting_distance / self.delta.magnitude();
         assert!(scaling_relation <  0.5, "Shoring distance is too large");
         
-        let start = self.start + scaling_relation * delta;
-        let end = self.end - scaling_relation * delta;
+        let start = self.start + scaling_relation * self.delta;
+        let end = self.end - scaling_relation * self.delta;
         
         Line::new(start, end)
     }
@@ -149,14 +149,11 @@ impl Line {
     /// assert!(intersect);
     /// ```
     pub fn intersects_with(&self, other: &Line) -> bool {
-        let own_delta = self.end - self.start;
-        let other_delta = other.end - other.start;
-
         let start_delta = other.start - self.start;
 
-        let base_det = - own_delta.x * other_delta.y + own_delta.y * other_delta.x;
-        let own_det = - start_delta.x * other_delta.y + start_delta.y * other_delta.x;
-        let other_det = own_delta.x * start_delta.y - own_delta.y * start_delta.x;
+        let base_det = - self.delta.x * other.delta.y + self.delta.y * other.delta.x;
+        let own_det = - start_delta.x * other.delta.y + start_delta.y * other.delta.x;
+        let other_det = self.delta.x * start_delta.y - self.delta.y * start_delta.x;
 
         let my = own_det / base_det;
         let lambda = other_det / base_det;

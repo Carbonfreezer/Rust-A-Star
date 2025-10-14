@@ -45,7 +45,7 @@ impl GraphConstructor {
     /// constructor.add_random_points(1000);
     /// ``` 
     pub fn add_random_points(&mut self,  num_of_points : usize) {
-        self.point_collection.clear();
+        self.point_collection = Vec::with_capacity(num_of_points);
         while self.point_collection.len() < num_of_points {
             let candidate = Vec2::new(rand::random_range(0.0..EXTENSION),
                                       rand::random_range(0.0..EXTENSION));
@@ -67,10 +67,10 @@ impl GraphConstructor {
     /// constructor.try_add_links(5000);
     /// ``` 
     pub fn try_add_links(&mut self, num_of_links : usize) {
-        self.point_pairing.clear();
+        self.point_pairing = Vec::with_capacity(num_of_links);
         let mut counter = 0;
         let num_of_points = self.point_collection.len();
-        let mut link_collection : Vec<Line> = vec![];
+        let mut link_collection : Vec<Line> = Vec::with_capacity(num_of_links);
         while(self.point_pairing.len() < num_of_links) && (counter < MAX_ITERATIONS)
         {
             counter += 1;
