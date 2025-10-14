@@ -203,7 +203,7 @@ impl InteractionCore
         let size_of_float = size_of::<f32>();
         let vertices : Vec<f32> = start.get_as_array().iter().chain(end.get_as_array().iter()).copied().collect();
         let color_ptr = color.as_ptr();
-        let zero_vec = vec![0.0_f32, 0.0_f32];
+        let zero_vec = [0.0_f32, 0.0_f32];
         let position_ptr = zero_vec.as_ptr();
 
         unsafe {
@@ -252,11 +252,9 @@ impl InteractionCore
                            1.0 - 2.0_f32 *  y / self.screen_extension.1);
 
         // Here we analyze if we have a pick node.
-        if let Some(start) = self.node_selected
-        {
-            if let Some(destination) = self.graph.find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius) {
+        if let Some(start) = self.node_selected && 
+            let Some(destination) = self.graph.find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius) {
                 self.graph.search_graph(start, destination);
-            }
         }
     }
 
@@ -276,8 +274,8 @@ impl InteractionCore
 }
 
 /// This is the main entrance to the test program that starts the OpenGL application
-/// 
-/// 
+///
+///
 /// # Parameters
 /// * **circle_radius**: The radius with which we paint circles. Also used for clicking.
 /// * **circle_exclusion_radius**: An outer radius for a point to keep points aparts (poisson disc distribution).
@@ -335,10 +333,7 @@ pub fn run_prog(circle_radius : f32, circle_exclusion_radius : f32,  max_line_le
 
             Event::KeyPressed(key) => {
                 use glume::window::VirtualKeyCode as Vk;
-                match key {
-                    Vk::Escape => wc.close(),
-                    _ => {},
-                }
+                if key == Vk::Escape { wc.close() }
             }
 
             Event::MouseButtonPressed(button) => {

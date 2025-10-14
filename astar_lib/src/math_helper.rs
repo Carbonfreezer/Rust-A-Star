@@ -131,7 +131,7 @@ impl Line {
         let my = own_det / base_det;
         let lambda = other_det / base_det;
 
-        (my >= 0.00001) && (my <= 0.99999) && (lambda >= 0.00001 && lambda <= 0.99999)
+        (0.00001..=0.99999).contains(&my) && (0.00001..=0.99999).contains(&lambda)
     }
 }
 

@@ -28,8 +28,7 @@ impl GraphConstructor {
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
     /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
-    /// ``` 
-
+    /// ```
     pub fn new(extension : f32, max_line_length : f32, exclusion_radius : f32) -> GraphConstructor {
         GraphConstructor { 
             point_collection: vec![],  point_pairing: vec![], extension, max_line_length, 
@@ -116,7 +115,7 @@ impl GraphConstructor {
     /// ```
     pub fn generate_graph(&mut self) -> NavGraph {
 
-        assert!( self.point_collection.len() > 0 && self.point_pairing.len() > 0, "Graph not initialized.");
+        assert!( !self.point_collection.is_empty() && !self.point_pairing.is_empty(), "Graph not initialized.");
         let mut graph = NavGraph::new();
 
         let point_handle: Vec<usize> = self.point_collection.iter().map(|position| graph.add_node(*position)).collect();

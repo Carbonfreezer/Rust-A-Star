@@ -44,6 +44,12 @@ pub struct NavGraph {
     links: Vec<(usize,usize)>,
 }
 
+impl Default for NavGraph {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NavGraph {
     /// Generates a new nav graph.
     /// 
