@@ -7,7 +7,7 @@ use crate::a_star::{NavGraph, NodeState};
 use crate::graph_constructor::GraphConstructor;
 use crate::math_helper::Vec2;
 
-struct InteractionCore
+pub struct InteractionCore
 {
     screen_extension : (f32, f32),
     cursor_pos : Vec2,
@@ -28,12 +28,21 @@ const POINTS_IN_CIRCLE : usize = 20;
 
 impl InteractionCore
 {
-    fn new(circle_radius : f32, circle_exclusion_radius : f32,
+    /// Generates the interaction core from several parameters.
+    ///
+    /// # Parameters
+    /// * **circle_radius**: The radius with which we paint circles. Also used for clicking.
+    /// * **circle_exclusion_radius**: An outer radius for a point to keep points aparts (poisson disc distribution).
+    /// * **max_line_length**: The maximum length an edge in the graph may have.
+    /// * **num_of_points**: The number of nodes we have in the graph.
+    /// * **num_of_links**: The number of edge we have in the graph-
+    ///
+    pub fn new(circle_radius : f32, circle_exclusion_radius : f32,
            max_line_length : f32, num_of_points : usize, num_of_links : usize)-> InteractionCore {
         let shader_program = Self::create_shader_program();
         let (translation, color) = Self::get_const_shader(shader_program);
-        let line_vbo_vba = Self::create_line_array();
-        let circle_vba = Self::create_circle_array(circle_radius);
+        let line_vbo_vba = Self::create_line_vbo_and_vba();
+        let circle_vba = Self::create_circle_vba(circle_radius);
         let mut graph_constructor = GraphConstructor::new(1.0, max_line_length, circle_exclusion_radius);
         graph_constructor.add_random_points(num_of_points);
         graph_constructor.add_random_links(num_of_links);
@@ -58,7 +67,7 @@ impl InteractionCore
 
     }
 
-    fn create_line_array() -> (u32,u32)
+    fn create_line_vbo_and_vba() -> (u32, u32)
     {
         let vertices : Vec<f32> = vec![0.0, 0.0, 0.0, 0.0];
         let mut vbo : u32 = 0;
@@ -84,7 +93,7 @@ impl InteractionCore
         (vbo, vba)
     }
 
-    fn create_circle_array(radius: f32) -> u32
+    fn create_circle_vba(radius: f32) -> u32
     {
         let mut vertices: Vec<f32> = Vec::with_capacity(POINTS_IN_CIRCLE * 2);
 
@@ -228,7 +237,8 @@ impl InteractionCore
         }
     }
 
-    fn redraw(&self) {
+    /// Gets invoked to render everything new. First paints the lines and then the nodes. 
+    pub fn redraw(&self) {
 
         for (start, end, solution) in self.graph.get_all_links_with_solution_hint() {
             let color_state = if solution {NodeState::Solution} else {NodeState::Clear};
@@ -240,11 +250,15 @@ impl InteractionCore
         }
     }
 
-    fn set_window_extension(&mut self, width : u32, height : u32) {
+    /// Sets the window extension from the outside. This is needed to get the cursor position 
+    /// in clip space.
+    pub fn set_window_extension(&mut self, width : u32, height : u32) {
         self.screen_extension = (width as f32, height as f32);
     }
 
-    fn set_cursor_pos(&mut self, (x,y) : (f32, f32)) {
+    /// Function gets called when the mouse cursor has moved. Stores the position and eventually 
+    /// updates the graph search calculation-
+    pub fn set_cursor_pos(&mut self, (x,y) : (f32, f32)) {
         self.cursor_pos = Vec2::new(2.0_f32 * x / self.screen_extension.0 - 1.0_f32,
                            1.0 - 2.0_f32 *  y / self.screen_extension.1);
 
@@ -255,14 +269,16 @@ impl InteractionCore
         }
     }
 
-    fn generate_graph(&mut self)  {
+    /// Gets called from the outside on right mouse button to regenerate a new graph.
+    pub fn generate_graph(&mut self)  {
         self.node_selected = None;
         self.graph_constructor.add_random_points(self.num_of_points);
         self.graph_constructor.add_random_links(self.num_of_links);
         self.graph = self.graph_constructor.generate_graph();
     }
 
-    fn pick_node(&mut self) {
+    /// Gets called from the outside on left mouse button to select a new start point.
+    pub fn pick_node(&mut self) {
         if let Some(hit_node) = self.graph.find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius) {
             self.node_selected = Some(hit_node);
         }

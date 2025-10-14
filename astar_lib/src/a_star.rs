@@ -2,11 +2,16 @@
 //! 
 use super::math_helper::Vec2;
 
+/// A declaration for the current state a node in the nav graph can be in.
 #[derive(Debug,Clone, PartialEq)]
 pub enum NodeState {
+    /// The node is in its original state unvisited.
     Clear,
+    /// The node has been visited but it is still in the opened state.
     Visited,
+    /// The node has been closed.
     Closed,
+    /// At the end of the search the nodes are marked as a part of the solution.
     Solution
 }
 #[derive(Debug, Clone)]
