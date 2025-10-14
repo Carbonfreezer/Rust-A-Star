@@ -1,6 +1,6 @@
 //! This module contains various helper function.
 
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add,  Sub};
 
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
@@ -20,6 +20,19 @@ impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
         
         Vec2 { x, y }
+    }
+
+    /// Returns the position as an vertex array.
+    /// Primarily intended for the use of OpenGL
+    ///
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// let test = Vec2::new(1.0, 2.0);
+    /// let vec = test.get_as_array();
+    /// ```
+    pub fn get_as_array(&self) -> Vec<f32> {
+        vec![self.x, self.y]
     }
 
     /// Gets the magnitude of a vector.
@@ -62,13 +75,6 @@ impl Sub for Vec2 {
     }
 }
 
-impl Mul<Vec2> for f32 {
-    type Output = Vec2;
-
-    fn mul(self, rhs: Vec2) -> Vec2 {
-        Vec2 { x: self * rhs.x, y: self * rhs.y }
-    }
-}
 
 
 
@@ -76,7 +82,6 @@ impl Mul<Vec2> for f32 {
 #[derive(Debug,  Clone)]
 pub struct Line {
     start: Vec2,
-    end: Vec2,
     delta : Vec2,
 }
 
@@ -89,7 +94,7 @@ impl Line {
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// ```
     pub fn new(start: Vec2, end: Vec2) -> Line {
-        Line { start, end, delta: end - start }
+        Line { start, delta: end - start }
     }
     
     
@@ -104,38 +109,6 @@ impl Line {
         self.delta.magnitude()
     }
 
-    /// Gets the start and end point of the line.
-    /// # Example
-    /// ```
-    /// use astar_lib::math_helper::{Vec2, Line};
-    /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
-    /// let (start, end) = line_a.get_start_end();
-    /// ``` 
-    pub fn get_start_end(&self) -> (&Vec2, &Vec2) {
-        (&self.start, &self.end)
-    }
-    
-    /// Gets a shortened version of the line by removing the shortening distance from
-    /// the start and the end.
-    ///
-    /// # Panic
-    /// If we remove more from the line than the length of the line.
-    /// 
-    /// # Example
-    /// ```
-    /// use astar_lib::math_helper::{Vec2, Line};
-    /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
-    /// let new_line = line_a.get_shortened_version(0.1);
-    /// ``` 
-    pub fn get_shortened_version(&self, shorting_distance: f32 ) -> Line {
-        let scaling_relation = shorting_distance / self.delta.magnitude();
-        assert!(scaling_relation <  0.5, "Shoring distance is too large");
-        
-        let start = self.start + scaling_relation * self.delta;
-        let end = self.end - scaling_relation * self.delta;
-        
-        Line::new(start, end)
-    }
 
 
     /// Checks if this line intersects with another line.
@@ -184,12 +157,5 @@ mod tests {
         let intersect = line_c.intersects_with(&line_b);
         assert!(!intersect);
     }
-    
-    #[test]
-    fn shortening_test() {
-        let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 0.0));
-        let new_line = line_a.get_shortened_version(0.1);
-        
-        println!("{:?}", new_line);
-    }
+
 }

@@ -68,9 +68,9 @@ impl GraphConstructor {
     /// use astar_lib::graph_constructor::GraphConstructor;
     /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
     /// constructor.add_random_points(1000);
-    /// constructor.try_add_links(5000);
+    /// constructor.add_random_links(5000);
     /// ``` 
-    pub fn try_add_links(&mut self, num_of_links : usize) {
+    pub fn add_random_links(&mut self, num_of_links : usize) {
         self.point_pairing = Vec::with_capacity(num_of_links);
         let mut counter = 0;
         let num_of_points = self.point_collection.len();
@@ -111,10 +111,10 @@ impl GraphConstructor {
     /// use astar_lib::graph_constructor::GraphConstructor;
     /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
     /// constructor.add_random_points(1000);
-    /// constructor.try_add_links(5000);
+    /// constructor.add_random_links(5000);
     /// let _graph = constructor.generate_graph();
     /// ```
-    pub fn generate_graph(&self) -> NavGraph {
+    pub fn generate_graph(&mut self) -> NavGraph {
 
         assert!( self.point_collection.len() > 0 && self.point_pairing.len() > 0, "Graph not initialized.");
         let mut graph = NavGraph::new();
@@ -123,6 +123,8 @@ impl GraphConstructor {
         for (first, second) in &self.point_pairing {
             graph.connect_nodes(point_handle[*first], point_handle[*second]);
         }
+        self.point_collection.clear();
+        self.point_pairing.clear();
         graph
     }
 }
@@ -136,7 +138,7 @@ mod tests {
     fn vec_construction_test() {
        let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
         constructor.add_random_points(1000);
-        constructor.try_add_links(5000);
+        constructor.add_random_links(5000);
         constructor.generate_graph();
     }
 
