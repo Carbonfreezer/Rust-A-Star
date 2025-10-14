@@ -1,7 +1,8 @@
-
+//! This module contains the core a star algorithm
+//! 
 use super::math_helper::Vec2;
 
-#[derive(Debug,Clone, Copy, PartialEq)]
+#[derive(Debug,Clone, PartialEq)]
 pub enum NodeState {
     Clear,
     Visited,
@@ -45,28 +46,69 @@ pub struct NavGraph {
 
 impl NavGraph {
     /// Generates a new nav graph.
-    pub fn new() -> Self {
-        Self {
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use astar_lib::a_star::NavGraph;
+    /// let mut graph = NavGraph::new();
+    /// ```
+    pub fn new() -> NavGraph {
+        NavGraph {
             nodes: Vec::new(),
             links: Vec::new(),
         }
     }
+    
+    
+    /// Gets an iterator for all the nodes and returns position and the current state.
+    /// # Example
+    ///
+    /// ```
+    ///  use astar_lib::math_helper::Vec2;
+    ///  use astar_lib::a_star::NavGraph;
+    ///  let mut graph = NavGraph::new();
+    ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
+    ///  let p1 = graph.add_node(Vec2::new(0.5, 0.5));
+    ///
+    /// for (pos, state) in graph.get_all_nodes_with_state() {
+    ///     println!("Node {pos:?} state: {state:?}");
+    /// }
+    /// ```
+    pub fn get_all_nodes_with_state(&self) -> impl Iterator<Item=(&Vec2, &NodeState)> {
+        self.nodes.iter().map(|node| (&node.position, &node.state))
+    }
+
 
     /// Checks if a link handed over is a solution link.
-    fn is_solution_link(&self, link : &(usize, usize)) -> bool {
-        (self.nodes[link.0].state == NodeState::Solution) && (self.nodes[link.1].state == NodeState::Solution)
+    fn is_solution_link(&self, start_node : &usize, end_node: &usize) -> bool {
+        (self.nodes[*start_node].state == NodeState::Solution) && (self.nodes[*end_node].state == NodeState::Solution)
     }
-
-    pub fn get_all_solution_links(&self) -> impl Iterator<Item = &(usize, usize)>  {
-        self.links.iter().filter(|link| self.is_solution_link(*link))
+    
+    /// Gets an iterator all the links consisting of start position, end position and a hint whether this is link is part of the solution.
+    /// # Example
+    /// 
+    /// ```
+    ///  use astar_lib::math_helper::Vec2;
+    ///  use astar_lib::a_star::NavGraph;
+    ///  let mut graph = NavGraph::new();
+    ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
+    ///  let p1 = graph.add_node(Vec2::new(0.5, 0.5));
+    ///  graph.connect_nodes(p0, p1);
+    /// 
+    /// for (start, end, solution) in graph.get_all_links_with_solution_hint() {
+    ///     println!("Link from {start:?} to {end:?} is solution: {solution}");
+    /// }
+    /// ```
+    pub fn get_all_links_with_solution_hint(&self) -> impl Iterator<Item=(&Vec2, &Vec2, bool)> {
+        self.links.iter().map(|(start_node, end_node)| 
+            (&self.nodes[*start_node].position, &self.nodes[*end_node].position, self.is_solution_link(start_node, end_node)))
     }
+    
+    
 
-    pub fn get_all_simple_links(&self) -> impl Iterator<Item = &(usize, usize)>  {
-        self.links.iter().filter(|link| !self.is_solution_link(*link))
-    }
-
-
-    /// Finds the nearest node to the indicated position.
+    /// Finds the nearest node to the indicated position within a certain
+    /// maximum radius. If there is none it returns none.
     ///
     /// # Example
     /// ```
@@ -74,9 +116,9 @@ impl NavGraph {
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    /// let index = graph.find_nearest_node(Vec2::new(0.1, 0.0))
+    /// let index = graph.find_nearest_node_with_radius(&Vec2::new(0.00001, 0.0), 0.01).unwrap();
     /// ```
-    pub fn find_nearest_node(&self, position : &Vec2) -> usize {
+    pub fn find_nearest_node_with_radius(&self, position : &Vec2, radius : f32) -> Option<usize> {
         let mut min_dist = f32::MAX;
         let mut best_index = 0usize;
 
@@ -87,9 +129,10 @@ impl NavGraph {
                 best_index = index;
             }
         }
-        best_index
+        
+        if min_dist <= radius {Some(best_index)} else {None}
     }
-
+    
     /// Adds a position to the nav graph and returns a handle index that may be used for
     /// connecting the nodes.
     ///
@@ -105,21 +148,7 @@ impl NavGraph {
         self.nodes.push(NavNode::new(position));
         ret_val
     }
-
-    /// Gets the position and the state of a node used for rendering later on.
-    ///
-    /// # Example
-    /// ```
-    /// use astar_lib::math_helper::Vec2;
-    /// use astar_lib::a_star::NavGraph;
-    /// let mut graph = NavGraph::new();
-    /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    /// let (position, state) = graph.ask_node(p0);
-    /// ```
-    pub fn ask_node(&self, handle: usize) -> (Vec2, NodeState) {
-        let node = &self.nodes[handle];
-        (node.position, node.state)
-    }
+    
 
     /// Connects two graph nodes with indicated indices.
     ///
@@ -142,12 +171,16 @@ impl NavGraph {
         self.links.push((node1, node2));
     }
 
-    /// Asks for the link list of the graph, returns the indices.
-    pub fn get_link_list(&self) -> &Vec<(usize, usize)> {
-        &self.links
-    }
-
-    fn reset_graph_search(&mut self) {
+   
+    /// Resets the search and puts everything back to the base. 
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// use astar_lib::a_star::NavGraph;
+    /// let mut graph = NavGraph::new();
+    /// graph.reset_graph_search()
+    /// ```
+    pub fn reset_graph_search(&mut self) {
         for node in self.nodes.iter_mut() {
             node.reset();
         }
@@ -286,8 +319,12 @@ mod tests {
         let result = result.unwrap();
         assert_eq!(result, [0,2,3]);
         
-        for (source, destination) in graph.get_all_simple_links() {
-            println!("{:?} -> {:?}", source, destination);
+        for (source, destination, solution) in graph.get_all_links_with_solution_hint() {
+            println!("{:?} -> {:?} : {}", source, destination, solution);
+        }
+        
+        for (position, state) in graph.get_all_nodes_with_state() {
+            println!("{:?} : {:?}", position, state);
         }
 
 

@@ -1,6 +1,6 @@
-// !! This module contains various helper function.
+//! This module contains various helper function.
 
-use std::ops::{Add, Sub};
+use std::ops::{Add, Mul, Sub};
 
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
@@ -44,6 +44,8 @@ impl Vec2 {
     pub fn dist_to(&self, other: &Vec2) -> f32 {
         (*self - *other).magnitude()
     }
+    
+    
 }
 
 impl Add for Vec2 {
@@ -60,6 +62,15 @@ impl Sub for Vec2 {
     }
 }
 
+impl Mul<Vec2> for f32 {
+    type Output = Vec2;
+
+    fn mul(self, rhs: Vec2) -> Vec2 {
+        Vec2 { x: self * rhs.x, y: self * rhs.y }
+    }
+}
+
+
 
 /// Contains a line segment. can be used for intersection calculation.
 #[derive(Debug,  Clone)]
@@ -68,15 +79,62 @@ pub struct Line {
     end: Vec2,
 }
 
+
 impl Line {
     /// Creates a new line.
     /// # Example
     /// ```
     /// use astar_lib::math_helper::{Vec2, Line};
-    /// let lineA = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
+    /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// ```
     pub fn new(start: Vec2, end: Vec2) -> Line {
         Line { start, end }
+    }
+    
+    
+    /// Computes the length of a line.
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::{Vec2, Line};
+    /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
+    /// let length = line_a.length();
+    /// ``` 
+    pub fn length(&self) -> f32 {
+        (self.end - self.start).magnitude()
+    }
+
+    /// Gets the start and end point of the line.
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::{Vec2, Line};
+    /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
+    /// let (start, end) = line_a.get_start_end();
+    /// ``` 
+    pub fn get_start_end(&self) -> (&Vec2, &Vec2) {
+        (&self.start, &self.end)
+    }
+    
+    /// Gets a shortened version of the line by removing the shortening distance from
+    /// the start and the end.
+    ///
+    /// # Panic
+    /// If we remove more from the line than the length of the line.
+    /// 
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::{Vec2, Line};
+    /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
+    /// let new_line = line_a.get_shortened_version(0.1);
+    /// ``` 
+    pub fn get_shortened_version(&self, shorting_distance: f32 ) -> Line {
+        let delta = self.end - self.start; 
+        let scaling_relation = shorting_distance / delta.magnitude();
+        assert!(scaling_relation <  0.5, "Shoring distance is too large");
+        
+        let start = self.start + scaling_relation * delta;
+        let end = self.end - scaling_relation * delta;
+        
+        Line::new(start, end)
     }
 
 
@@ -128,5 +186,13 @@ mod tests {
         assert!(intersect);
         let intersect = line_c.intersects_with(&line_b);
         assert!(!intersect);
+    }
+    
+    #[test]
+    fn shortening_test() {
+        let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 0.0));
+        let new_line = line_a.get_shortened_version(0.1);
+        
+        println!("{:?}", new_line);
     }
 }
