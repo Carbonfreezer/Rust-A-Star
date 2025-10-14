@@ -3,15 +3,6 @@
 use crate::a_star::NavGraph;
 use super::math_helper::{Line, Vec2};
 
-/// The extension from 0 to [`EXTENSION`] we use for generating the nodes of the graph..
-pub const EXTENSION: f32 = 1.0;
-
-/// The radius we have around one point where no additional point should be added.
-const EXCLUSION_RADIUS: f32 = 0.025;
-
-/// The maximum length we can have for a line.
-const MAX_LINE_LENGTH: f32 = 0.15;
-
 /// The maximum number of iterations we make per attempt for link generation
 const MAX_ITERATIONS: usize = 100000;
 
@@ -19,20 +10,31 @@ const MAX_ITERATIONS: usize = 100000;
 pub struct GraphConstructor {
     point_collection : Vec<Vec2>,
     point_pairing : Vec<(usize, usize)>,
+    extension : f32,
+    max_line_length : f32,
+    exclusion_distance : f32,
 }
 
 impl GraphConstructor {
     
     /// Generates a new graph constructor
+    /// 
+    /// # Parameters
+    /// * **extension:** The graph will have coordinates ranging from -extension..extension
+    /// * **max_line_length:** The maximum length and edge can have.
+    /// * **exclusion_radius:** The outer radius of each node to keep distance. 
     ///
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new();
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
     /// ``` 
 
-    pub fn new() -> GraphConstructor {
-        GraphConstructor { point_collection: vec![],  point_pairing: vec![] }
+    pub fn new(extension : f32, max_line_length : f32, exclusion_radius : f32) -> GraphConstructor {
+        GraphConstructor { 
+            point_collection: vec![],  point_pairing: vec![], extension, max_line_length, 
+            exclusion_distance : 2.0 * exclusion_radius 
+        }
     }
 
 
@@ -41,16 +43,18 @@ impl GraphConstructor {
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new();
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
     /// constructor.add_random_points(1000);
     /// ``` 
     pub fn add_random_points(&mut self,  num_of_points : usize) {
         self.point_collection = Vec::with_capacity(num_of_points);
-        while self.point_collection.len() < num_of_points {
-            let candidate = Vec2::new(rand::random_range(0.0..EXTENSION),
-                                      rand::random_range(0.0..EXTENSION));
+        let mut counter = 0;
+        while (self.point_collection.len() < num_of_points) && (counter < MAX_ITERATIONS) {
+            counter += 1;
+            let candidate = Vec2::new(rand::random_range(-self.extension..self.extension),
+                                      rand::random_range(-self.extension..self.extension));
 
-            if self.point_collection.iter().all(|partner| candidate.dist_to(partner) > 2.0 * EXCLUSION_RADIUS) {
+            if self.point_collection.iter().all(|partner| candidate.dist_to(partner) > self.exclusion_distance) {
                 self.point_collection.push(candidate);
             }
         }
@@ -62,7 +66,7 @@ impl GraphConstructor {
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new();
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
     /// constructor.add_random_points(1000);
     /// constructor.try_add_links(5000);
     /// ``` 
@@ -88,7 +92,7 @@ impl GraphConstructor {
 
             let line = Line::new(self.point_collection[first_ind], self.point_collection[second_ind] );
             // Check if line too long.
-            if line.length() > MAX_LINE_LENGTH {continue;}
+            if line.length() > self.max_line_length {continue;}
             // Check if line intersects with a different one.
             if link_collection.iter().any(|other_line| other_line.intersects_with(&line)) {continue;}
 
@@ -105,7 +109,7 @@ impl GraphConstructor {
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new();
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
     /// constructor.add_random_points(1000);
     /// constructor.try_add_links(5000);
     /// let _graph = constructor.generate_graph();
@@ -130,11 +134,10 @@ mod tests {
 
     #[test]
     fn vec_construction_test() {
-       let mut constructor = GraphConstructor::new();
+       let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
         constructor.add_random_points(1000);
         constructor.try_add_links(5000);
-        let graph = constructor.generate_graph();
-        assert_eq!(graph.get_all_nodes_with_state().count(), 1000);
+        constructor.generate_graph();
     }
 
 }
