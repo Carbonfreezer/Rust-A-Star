@@ -63,8 +63,7 @@ impl InteractionCore
         let vertices : Vec<f32> = vec![0.0, 0.0, 0.0, 0.0];
         let mut vbo : u32 = 0;
         let mut vba : u32 = 0;
-
-        let size_of_float = size_of::<f32>();
+        
 
         unsafe {
             gl::CreateBuffers(1, &mut vbo);
@@ -72,11 +71,11 @@ impl InteractionCore
 
             gl::BindVertexArray(vba);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of_float) as GLsizeiptr,
+            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of::<f32>()) as GLsizeiptr,
                            vertices.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW );
 
             gl::VertexAttribPointer (0, 2, gl::FLOAT, gl::FALSE,
-                                     (2 * size_of_float) as GLint , std::ptr::null());
+                                     (2 * size_of::<f32>()) as GLint , std::ptr::null());
             gl::EnableVertexAttribArray(0);
             gl::BindVertexArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -96,19 +95,18 @@ impl InteractionCore
 
         let mut vbo : u32 = 0;
         let mut vba : u32 = 0;
-        let size_of_float = size_of::<f32>();
-
+       
         unsafe {
             gl::CreateBuffers(1, &mut vbo);
             gl::CreateVertexArrays(1, &mut vba);
 
             gl::BindVertexArray(vba);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of_float) as GLsizeiptr,
+            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of::<f32>()) as GLsizeiptr,
                            vertices.as_ptr() as *const GLvoid, gl::STATIC_DRAW );
 
             gl::VertexAttribPointer (0, 2, gl::FLOAT, gl::FALSE,
-                                     (2 * size_of_float) as GLint , std::ptr::null());
+                                     (2 * size_of::<f32>()) as GLint , std::ptr::null());
             gl::EnableVertexAttribArray(0);
             gl::BindVertexArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -200,7 +198,6 @@ impl InteractionCore
     }
 
     fn draw_line(&self, start: &Vec2, end: &Vec2, color: &[f32]) {
-        let size_of_float = size_of::<f32>();
         let vertices : Vec<f32> = start.get_as_array().iter().chain(end.get_as_array().iter()).copied().collect();
         let color_ptr = color.as_ptr();
         let zero_vec = [0.0_f32, 0.0_f32];
@@ -212,7 +209,7 @@ impl InteractionCore
             gl::BindBuffer(gl::ARRAY_BUFFER, self.line_vbo_vba.0);
             gl::Uniform3fv(self.color,1, color_ptr);
             gl::Uniform2fv(self.translation, 1, position_ptr);
-            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of_float) as GLsizeiptr,
+            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of::<f32>()) as GLsizeiptr,
                            vertices.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW );
             gl::DrawArrays(gl::LINES, 0, 2);
             gl::BindVertexArray(0);
