@@ -50,7 +50,7 @@ impl GraphConstructor {
             let candidate = Vec2::new(rand::random_range(0.0..EXTENSION),
                                       rand::random_range(0.0..EXTENSION));
 
-            if self.point_collection.iter().all(|partner| candidate.dist_to(partner) > EXCLUSION_RADIUS) {
+            if self.point_collection.iter().all(|partner| candidate.dist_to(partner) > 2.0 * EXCLUSION_RADIUS) {
                 self.point_collection.push(candidate);
             }
         }
