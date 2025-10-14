@@ -1,5 +1,3 @@
-
-
 extern crate astar_lib;
 use astar_lib::graphics;
 

@@ -1,9 +1,9 @@
 //! This module contains the core a star algorithm
-//! 
+//!
 use super::math_helper::Vec2;
 
 /// A declaration for the current state a node in the nav graph can be in.
-#[derive(Debug,Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NodeState {
     /// The node is in its original state unvisited.
     Clear,
@@ -12,17 +12,16 @@ pub enum NodeState {
     /// The node has been closed.
     Closed,
     /// At the end of the search the nodes are marked as a part of the solution.
-    Solution
+    Solution,
 }
 #[derive(Debug, Clone)]
 struct NavNode {
     position: Vec2,
     connections: Vec<(usize, f32)>,
     ancestor_node: usize,
-    g_value : f32,
-    f_value : f32,
-    state : NodeState
-
+    g_value: f32,
+    f_value: f32,
+    state: NodeState,
 }
 
 impl NavNode {
@@ -30,10 +29,10 @@ impl NavNode {
         Self {
             position,
             connections: Vec::new(),
-            ancestor_node : 0,
-            g_value : 0.0,
-            f_value : 0.0,
-            state : NodeState::Clear
+            ancestor_node: 0,
+            g_value: 0.0,
+            f_value: 0.0,
+            state: NodeState::Clear,
         }
     }
 
@@ -42,11 +41,10 @@ impl NavNode {
     }
 }
 
-
 /// The graph structure that may be used for navigation.
 pub struct NavGraph {
     nodes: Vec<NavNode>,
-    links: Vec<(usize,usize)>,
+    links: Vec<(usize, usize)>,
 }
 
 impl Default for NavGraph {
@@ -57,9 +55,9 @@ impl Default for NavGraph {
 
 impl NavGraph {
     /// Generates a new nav graph.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
@@ -70,8 +68,7 @@ impl NavGraph {
             links: Vec::new(),
         }
     }
-    
-    
+
     /// Gets an iterator for all the nodes and returns position and the current state.
     /// # Example
     ///
@@ -86,19 +83,19 @@ impl NavGraph {
     ///     println!("Node {pos:?} state: {state:?}");
     /// }
     /// ```
-    pub fn get_all_nodes_with_state(&self) -> impl Iterator<Item=(&Vec2, &NodeState)> {
+    pub fn get_all_nodes_with_state(&self) -> impl Iterator<Item = (&Vec2, &NodeState)> {
         self.nodes.iter().map(|node| (&node.position, &node.state))
     }
 
-
     /// Checks if a link handed over is a solution link.
-    fn is_solution_link(&self, start_node : &usize, end_node: &usize) -> bool {
-        (self.nodes[*start_node].state == NodeState::Solution) && (self.nodes[*end_node].state == NodeState::Solution)
+    fn is_solution_link(&self, start_node: &usize, end_node: &usize) -> bool {
+        (self.nodes[*start_node].state == NodeState::Solution)
+            && (self.nodes[*end_node].state == NodeState::Solution)
     }
-    
+
     /// Gets an iterator all the links consisting of start position, end position and a hint whether this is link is part of the solution.
     /// # Example
-    /// 
+    ///
     /// ```
     ///  use astar_lib::math_helper::Vec2;
     ///  use astar_lib::a_star::NavGraph;
@@ -106,17 +103,20 @@ impl NavGraph {
     ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
     ///  let p1 = graph.add_node(Vec2::new(0.5, 0.5));
     ///  graph.connect_nodes(p0, p1);
-    /// 
+    ///
     /// for (start, end, solution) in graph.get_all_links_with_solution_hint() {
     ///     println!("Link from {start:?} to {end:?} is solution: {solution}");
     /// }
     /// ```
-    pub fn get_all_links_with_solution_hint(&self) -> impl Iterator<Item=(&Vec2, &Vec2, bool)> {
-        self.links.iter().map(|(start_node, end_node)| 
-            (&self.nodes[*start_node].position, &self.nodes[*end_node].position, self.is_solution_link(start_node, end_node)))
+    pub fn get_all_links_with_solution_hint(&self) -> impl Iterator<Item = (&Vec2, &Vec2, bool)> {
+        self.links.iter().map(|(start_node, end_node)| {
+            (
+                &self.nodes[*start_node].position,
+                &self.nodes[*end_node].position,
+                self.is_solution_link(start_node, end_node),
+            )
+        })
     }
-    
-    
 
     /// Finds the nearest node to the indicated position within a certain
     /// maximum radius. If there is none it returns none.
@@ -129,21 +129,25 @@ impl NavGraph {
     /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
     /// let index = graph.find_nearest_node_with_radius(&Vec2::new(0.00001, 0.0), 0.01).unwrap();
     /// ```
-    pub fn find_nearest_node_with_radius(&self, position : &Vec2, radius : f32) -> Option<usize> {
+    pub fn find_nearest_node_with_radius(&self, position: &Vec2, radius: f32) -> Option<usize> {
         let mut min_dist = f32::MAX;
         let mut best_index = 0usize;
 
         for (index, node) in self.nodes.iter().enumerate() {
-            let dist =  node.position.dist_to(position);
+            let dist = node.position.dist_to(position);
             if dist < min_dist {
                 min_dist = dist;
                 best_index = index;
             }
         }
-        
-        if min_dist <= radius {Some(best_index)} else {None}
+
+        if min_dist <= radius {
+            Some(best_index)
+        } else {
+            None
+        }
     }
-    
+
     /// Adds a position to the nav graph and returns a handle index that may be used for
     /// connecting the nodes.
     ///
@@ -159,7 +163,6 @@ impl NavGraph {
         self.nodes.push(NavNode::new(position));
         ret_val
     }
-    
 
     /// Connects two graph nodes with indicated indices.
     ///
@@ -176,14 +179,15 @@ impl NavGraph {
         assert!(node1 < self.nodes.len(), "Node 1 does not exist");
         assert!(node2 < self.nodes.len(), "Node 2 does not exist");
 
-        let dist = self.nodes[node1].position.dist_to(&self.nodes[node2].position);
+        let dist = self.nodes[node1]
+            .position
+            .dist_to(&self.nodes[node2].position);
         self.nodes[node1].connections.push((node2, dist));
         self.nodes[node2].connections.push((node1, dist));
         self.links.push((node1, node2));
     }
 
-   
-    /// Resets the search and puts everything back to the base. 
+    /// Resets the search and puts everything back to the base.
     /// # Example
     /// ```
     /// use astar_lib::math_helper::Vec2;
@@ -197,13 +201,11 @@ impl NavGraph {
         }
     }
 
-
-    fn get_path(&mut self,  start_index : usize, destination_index : usize) -> Vec<usize> {
-        let mut path : Vec<usize> = Vec::new();
+    fn get_path(&mut self, start_index: usize, destination_index: usize) -> Vec<usize> {
+        let mut path: Vec<usize> = Vec::new();
         let mut scan = destination_index;
 
-        while scan != start_index
-        {
+        while scan != start_index {
             path.push(scan);
             self.nodes[scan].state = NodeState::Solution;
             scan = self.nodes[scan].ancestor_node;
@@ -213,7 +215,6 @@ impl NavGraph {
         path.reverse();
         path
     }
-
 
     /// Does the real search from the start point to the end point of the graph. This is the real search operation.
     /// # Parameters:
@@ -247,26 +248,32 @@ impl NavGraph {
     ///          println!("{:?}", pos);
     ///       } }
     ///  ```
-    pub fn search_graph(&mut self, start_index: usize, destination_index :usize) -> Option<Vec<usize>> {
+    pub fn search_graph(
+        &mut self,
+        start_index: usize,
+        destination_index: usize,
+    ) -> Option<Vec<usize>> {
         self.reset_graph_search();
         let dest_point = self.nodes[destination_index].position;
-        let mut todo_list : Vec<usize> = Vec::new();
+        let mut todo_list: Vec<usize> = Vec::new();
 
         self.nodes[start_index].state = NodeState::Visited;
         todo_list.push(start_index);
 
         loop {
-
             // In this case there is no path we return none.
-            let (best_index, best_candidate) = todo_list.iter().enumerate().min_by(|a, b|
-                self.nodes[*a.1].f_value.total_cmp( &self.nodes[*b.1].f_value))?;
+            let (best_index, best_candidate) = todo_list.iter().enumerate().min_by(|a, b| {
+                self.nodes[*a.1]
+                    .f_value
+                    .total_cmp(&self.nodes[*b.1].f_value)
+            })?;
             let best_candidate = *best_candidate;
             todo_list.swap_remove(best_index);
 
             self.nodes[best_candidate].state = NodeState::Closed;
 
             if best_candidate == destination_index {
-                return Some(self.get_path( start_index, destination_index));
+                return Some(self.get_path(start_index, destination_index));
             }
 
             let connection_count = self.nodes[best_candidate].connections.len();
@@ -281,22 +288,25 @@ impl NavGraph {
                         partner_node.state = NodeState::Visited;
                         partner_node.ancestor_node = best_candidate;
                         partner_node.g_value = root_g_value + distance;
-                        partner_node.f_value = partner_node.g_value + partner_node.position.dist_to(&dest_point);
+                        partner_node.f_value =
+                            partner_node.g_value + partner_node.position.dist_to(&dest_point);
                         todo_list.push(global_index);
-                    },
+                    }
                     NodeState::Visited => {
                         let new_g_value = root_g_value + distance;
                         if new_g_value < partner_node.g_value {
                             partner_node.g_value = new_g_value;
-                            partner_node.f_value = new_g_value + partner_node.position.dist_to(&dest_point);
+                            partner_node.f_value =
+                                new_g_value + partner_node.position.dist_to(&dest_point);
                             partner_node.ancestor_node = best_candidate;
                         }
                     }
-                    NodeState::Closed => {},
-                    NodeState::Solution => {panic!("Case should not happen")}
+                    NodeState::Closed => {}
+                    NodeState::Solution => {
+                        panic!("Case should not happen")
+                    }
                 }
             }
-
         }
     }
 }
@@ -306,8 +316,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn base_test()
-    {
+    fn base_test() {
         let mut graph = NavGraph::new();
 
         let p0 = graph.add_node(Vec2::new(0.0, 0.0));
@@ -328,20 +337,17 @@ mod tests {
         assert!(result.is_some());
 
         let result = result.unwrap();
-        assert_eq!(result, [0,2,3]);
-        
+        assert_eq!(result, [0, 2, 3]);
+
         for (source, destination, solution) in graph.get_all_links_with_solution_hint() {
             println!("{:?} -> {:?} : {}", source, destination, solution);
         }
-        
+
         for (position, state) in graph.get_all_nodes_with_state() {
             println!("{:?} : {:?}", position, state);
         }
 
-
-
-        let result = graph.search_graph(p0,p5);
+        let result = graph.search_graph(p0, p5);
         assert!(result.is_none(), "There should not be a solution!");
-
     }
 }

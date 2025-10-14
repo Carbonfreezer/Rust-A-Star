@@ -1,33 +1,31 @@
 //! This is essentially the core program containing all the OpenGL graphics.
 
-use glume::gl;
-use glume::gl::types::*;
-use glume::window::{Event, MouseButton};
 use crate::a_star::{NavGraph, NodeState};
 use crate::graph_constructor::GraphConstructor;
 use crate::math_helper::Vec2;
+use glume::gl;
+use glume::gl::types::*;
+use glume::window::{Event, MouseButton};
 
-pub struct InteractionCore
-{
-    screen_extension : (f32, f32),
-    cursor_pos : Vec2,
+pub struct InteractionCore {
+    screen_extension: (f32, f32),
+    cursor_pos: Vec2,
     shader_program: u32,
-    translation : i32,
-    color : i32,
-    line_vbo_vba : (u32, u32),
-    circle_vba : u32,
+    translation: i32,
+    color: i32,
+    line_vbo_vba: (u32, u32),
+    circle_vba: u32,
     graph_constructor: GraphConstructor,
-    num_of_points : usize,
-    num_of_links : usize,
-    graph : NavGraph,
-    circle_radius : f32,
-    node_selected : Option<usize>
+    num_of_points: usize,
+    num_of_links: usize,
+    graph: NavGraph,
+    circle_radius: f32,
+    node_selected: Option<usize>,
 }
 
-const POINTS_IN_CIRCLE : usize = 20;
+const POINTS_IN_CIRCLE: usize = 20;
 
-impl InteractionCore
-{
+impl InteractionCore {
     /// Generates the interaction core from several parameters.
     ///
     /// # Parameters
@@ -37,20 +35,26 @@ impl InteractionCore
     /// * **num_of_points**: The number of nodes we have in the graph.
     /// * **num_of_links**: The number of edge we have in the graph-
     ///
-    pub fn new(circle_radius : f32, circle_exclusion_radius : f32,
-           max_line_length : f32, num_of_points : usize, num_of_links : usize)-> InteractionCore {
+    pub fn new(
+        circle_radius: f32,
+        circle_exclusion_radius: f32,
+        max_line_length: f32,
+        num_of_points: usize,
+        num_of_links: usize,
+    ) -> InteractionCore {
         let shader_program = Self::create_shader_program();
         let (translation, color) = Self::get_const_shader(shader_program);
         let line_vbo_vba = Self::create_line_vbo_and_vba();
         let circle_vba = Self::create_circle_vba(circle_radius);
-        let mut graph_constructor = GraphConstructor::new(1.0, max_line_length, circle_exclusion_radius);
+        let mut graph_constructor =
+            GraphConstructor::new(1.0, max_line_length, circle_exclusion_radius);
         graph_constructor.add_random_points(num_of_points);
         graph_constructor.add_random_links(num_of_links);
         let graph = graph_constructor.generate_graph();
 
         InteractionCore {
-            screen_extension : (100.0, 100.0),
-            cursor_pos : Vec2::new(0.0, 0.0),
+            screen_extension: (100.0, 100.0),
+            cursor_pos: Vec2::new(0.0, 0.0),
             shader_program,
             translation,
             color,
@@ -61,18 +65,14 @@ impl InteractionCore
             num_of_links,
             graph,
             circle_radius,
-            node_selected : None
+            node_selected: None,
         }
-
-
     }
 
-    fn create_line_vbo_and_vba() -> (u32, u32)
-    {
-        let vertices : Vec<f32> = vec![0.0, 0.0, 0.0, 0.0];
-        let mut vbo : u32 = 0;
-        let mut vba : u32 = 0;
-        
+    fn create_line_vbo_and_vba() -> (u32, u32) {
+        let vertices: Vec<f32> = vec![0.0, 0.0, 0.0, 0.0];
+        let mut vbo: u32 = 0;
+        let mut vba: u32 = 0;
 
         unsafe {
             gl::CreateBuffers(1, &mut vbo);
@@ -80,11 +80,21 @@ impl InteractionCore
 
             gl::BindVertexArray(vba);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of::<f32>()) as GLsizeiptr,
-                           vertices.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW );
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                (vertices.len() * size_of::<f32>()) as GLsizeiptr,
+                vertices.as_ptr() as *const GLvoid,
+                gl::DYNAMIC_DRAW,
+            );
 
-            gl::VertexAttribPointer (0, 2, gl::FLOAT, gl::FALSE,
-                                     (2 * size_of::<f32>()) as GLint , std::ptr::null());
+            gl::VertexAttribPointer(
+                0,
+                2,
+                gl::FLOAT,
+                gl::FALSE,
+                (2 * size_of::<f32>()) as GLint,
+                std::ptr::null(),
+            );
             gl::EnableVertexAttribArray(0);
             gl::BindVertexArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -93,29 +103,42 @@ impl InteractionCore
         (vbo, vba)
     }
 
-    fn create_circle_vba(radius: f32) -> u32
-    {
+    fn create_circle_vba(radius: f32) -> u32 {
         let mut vertices: Vec<f32> = Vec::with_capacity(POINTS_IN_CIRCLE * 2);
 
         for i in 0..POINTS_IN_CIRCLE {
-            vertices.push(radius * (i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32).cos());
-            vertices.push(radius * (i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32).sin());
+            vertices.push(
+                radius * (i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32).cos(),
+            );
+            vertices.push(
+                radius * (i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32).sin(),
+            );
         }
 
-        let mut vbo : u32 = 0;
-        let mut vba : u32 = 0;
-       
+        let mut vbo: u32 = 0;
+        let mut vba: u32 = 0;
+
         unsafe {
             gl::CreateBuffers(1, &mut vbo);
             gl::CreateVertexArrays(1, &mut vba);
 
             gl::BindVertexArray(vba);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of::<f32>()) as GLsizeiptr,
-                           vertices.as_ptr() as *const GLvoid, gl::STATIC_DRAW );
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                (vertices.len() * size_of::<f32>()) as GLsizeiptr,
+                vertices.as_ptr() as *const GLvoid,
+                gl::STATIC_DRAW,
+            );
 
-            gl::VertexAttribPointer (0, 2, gl::FLOAT, gl::FALSE,
-                                     (2 * size_of::<f32>()) as GLint , std::ptr::null());
+            gl::VertexAttribPointer(
+                0,
+                2,
+                gl::FLOAT,
+                gl::FALSE,
+                (2 * size_of::<f32>()) as GLint,
+                std::ptr::null(),
+            );
             gl::EnableVertexAttribArray(0);
             gl::BindVertexArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -124,9 +147,9 @@ impl InteractionCore
         vba
     }
 
-    fn get_const_shader(program : u32)-> (i32, i32) {
+    fn get_const_shader(program: u32) -> (i32, i32) {
         let color_str = std::ffi::CString::new("PaintColor").unwrap();
-        let translation_str= std::ffi::CString::new("translation").unwrap();
+        let translation_str = std::ffi::CString::new("translation").unwrap();
         let translation;
         let color;
         unsafe {
@@ -136,7 +159,6 @@ impl InteractionCore
 
         (translation, color)
     }
-
 
     fn compile_shader(source: &str, shader_type: u32) -> u32 {
         let shader = unsafe { gl::CreateShader(shader_type) };
@@ -187,7 +209,7 @@ impl InteractionCore
         }
     }
 
-    fn draw_circle(&self, center: &Vec2, color : &[f32]) {
+    fn draw_circle(&self, center: &Vec2, color: &[f32]) {
         let color_ptr = color.as_ptr();
         let center_array = center.get_as_array();
         let position_ptr = center_array.as_ptr();
@@ -197,7 +219,7 @@ impl InteractionCore
             gl::BindVertexArray(self.circle_vba);
 
             // Upload variables.
-            gl::Uniform3fv(self.color,1, color_ptr);
+            gl::Uniform3fv(self.color, 1, color_ptr);
             gl::Uniform2fv(self.translation, 1, position_ptr);
 
             gl::DrawArrays(gl::TRIANGLE_FAN, 0, POINTS_IN_CIRCLE as i32);
@@ -207,7 +229,12 @@ impl InteractionCore
     }
 
     fn draw_line(&self, start: &Vec2, end: &Vec2, color: &[f32]) {
-        let vertices : Vec<f32> = start.get_as_array().iter().chain(end.get_as_array().iter()).copied().collect();
+        let vertices: Vec<f32> = start
+            .get_as_array()
+            .iter()
+            .chain(end.get_as_array().iter())
+            .copied()
+            .collect();
         let color_ptr = color.as_ptr();
         let zero_vec = [0.0_f32, 0.0_f32];
         let position_ptr = zero_vec.as_ptr();
@@ -216,17 +243,20 @@ impl InteractionCore
             gl::UseProgram(self.shader_program);
             gl::BindVertexArray(self.line_vbo_vba.1);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.line_vbo_vba.0);
-            gl::Uniform3fv(self.color,1, color_ptr);
+            gl::Uniform3fv(self.color, 1, color_ptr);
             gl::Uniform2fv(self.translation, 1, position_ptr);
-            gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * size_of::<f32>()) as GLsizeiptr,
-                           vertices.as_ptr() as *const GLvoid, gl::DYNAMIC_DRAW );
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                (vertices.len() * size_of::<f32>()) as GLsizeiptr,
+                vertices.as_ptr() as *const GLvoid,
+                gl::DYNAMIC_DRAW,
+            );
             gl::DrawArrays(gl::LINES, 0, 2);
             gl::BindVertexArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
             gl::UseProgram(0);
         }
     }
-
 
     fn get_color(state: &NodeState) -> [f32; 3] {
         match state {
@@ -237,40 +267,48 @@ impl InteractionCore
         }
     }
 
-    /// Gets invoked to render everything new. First paints the lines and then the nodes. 
+    /// Gets invoked to render everything new. First paints the lines and then the nodes.
     pub fn redraw(&self) {
-
         for (start, end, solution) in self.graph.get_all_links_with_solution_hint() {
-            let color_state = if solution {NodeState::Solution} else {NodeState::Clear};
+            let color_state = if solution {
+                NodeState::Solution
+            } else {
+                NodeState::Clear
+            };
             self.draw_line(start, end, &Self::get_color(&color_state))
         }
 
-        for (position,state) in self.graph.get_all_nodes_with_state() {
+        for (position, state) in self.graph.get_all_nodes_with_state() {
             self.draw_circle(position, &Self::get_color(state));
         }
     }
 
-    /// Sets the window extension from the outside. This is needed to get the cursor position 
+    /// Sets the window extension from the outside. This is needed to get the cursor position
     /// in clip space.
-    pub fn set_window_extension(&mut self, width : u32, height : u32) {
+    pub fn set_window_extension(&mut self, width: u32, height: u32) {
         self.screen_extension = (width as f32, height as f32);
     }
 
-    /// Function gets called when the mouse cursor has moved. Stores the position and eventually 
+    /// Function gets called when the mouse cursor has moved. Stores the position and eventually
     /// updates the graph search calculation-
-    pub fn set_cursor_pos(&mut self, (x,y) : (f32, f32)) {
-        self.cursor_pos = Vec2::new(2.0_f32 * x / self.screen_extension.0 - 1.0_f32,
-                           1.0 - 2.0_f32 *  y / self.screen_extension.1);
+    pub fn set_cursor_pos(&mut self, (x, y): (f32, f32)) {
+        self.cursor_pos = Vec2::new(
+            2.0_f32 * x / self.screen_extension.0 - 1.0_f32,
+            1.0 - 2.0_f32 * y / self.screen_extension.1,
+        );
 
         // Here we analyze if we have a pick node.
-        if let Some(start) = self.node_selected && 
-            let Some(destination) = self.graph.find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius) {
-                self.graph.search_graph(start, destination);
+        if let Some(start) = self.node_selected
+            && let Some(destination) = self
+                .graph
+                .find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius)
+        {
+            self.graph.search_graph(start, destination);
         }
     }
 
     /// Gets called from the outside on right mouse button to regenerate a new graph.
-    pub fn generate_graph(&mut self)  {
+    pub fn generate_graph(&mut self) {
         self.node_selected = None;
         self.graph_constructor.add_random_points(self.num_of_points);
         self.graph_constructor.add_random_links(self.num_of_links);
@@ -279,11 +317,13 @@ impl InteractionCore
 
     /// Gets called from the outside on left mouse button to select a new start point.
     pub fn pick_node(&mut self) {
-        if let Some(hit_node) = self.graph.find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius) {
+        if let Some(hit_node) = self
+            .graph
+            .find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius)
+        {
             self.node_selected = Some(hit_node);
         }
     }
-
 }
 
 /// This is the main entrance to the test program that starts the OpenGL application
@@ -300,9 +340,17 @@ impl InteractionCore
 ///  use astar_lib::graphics;
 ///  graphics::run_prog(0.015, 0.04, 0.2, 300, 800)
 /// ```
-pub fn run_prog(circle_radius : f32, circle_exclusion_radius : f32,  max_line_length : f32, num_of_points : usize, num_of_links : usize ) {
-
-    assert!(circle_radius < circle_exclusion_radius, "The inner radius has to be smaller.");
+pub fn run_prog(
+    circle_radius: f32,
+    circle_exclusion_radius: f32,
+    max_line_length: f32,
+    num_of_points: usize,
+    num_of_links: usize,
+) {
+    assert!(
+        circle_radius < circle_exclusion_radius,
+        "The inner radius has to be smaller."
+    );
 
     // initial configuration for the window
     let window_config = glume::window::WindowConfiguration {
@@ -318,14 +366,18 @@ pub fn run_prog(circle_radius : f32, circle_exclusion_radius : f32,  max_line_le
         gl::Enable(gl::DEBUG_OUTPUT);
     }
 
-
-
-    let mut core = InteractionCore::new(circle_radius, circle_exclusion_radius, max_line_length, num_of_points, num_of_links);
+    let mut core = InteractionCore::new(
+        circle_radius,
+        circle_exclusion_radius,
+        max_line_length,
+        num_of_points,
+        num_of_links,
+    );
 
     window.run(move |wc, event| {
         match event {
             Event::Resized(width, height) => {
-               core.set_window_extension(width, height);
+                core.set_window_extension(width, height);
                 unsafe {
                     gl::Viewport(0, 0, width as i32, height as i32);
                 }
@@ -340,20 +392,24 @@ pub fn run_prog(circle_radius : f32, circle_exclusion_radius : f32,  max_line_le
             }
 
             Event::CursorMoved(x, y) => {
-                core.set_cursor_pos((x , y ));
+                core.set_cursor_pos((x, y));
                 wc.request_redraw();
             }
 
             Event::KeyPressed(key) => {
                 use glume::window::VirtualKeyCode as Vk;
-                if key == Vk::Escape { wc.close() }
+                if key == Vk::Escape {
+                    wc.close()
+                }
             }
 
             Event::MouseButtonPressed(button) => {
                 wc.request_redraw();
                 match button {
-                    MouseButton::Left => {core.pick_node();},
-                    MouseButton::Right => {core.generate_graph() },
+                    MouseButton::Left => {
+                        core.pick_node();
+                    }
+                    MouseButton::Right => core.generate_graph(),
                     _ => {}
                 }
             }
@@ -363,7 +419,3 @@ pub fn run_prog(circle_radius : f32, circle_exclusion_radius : f32,  max_line_le
         Ok(())
     })
 }
-
-
-
-

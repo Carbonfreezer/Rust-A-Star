@@ -1,11 +1,10 @@
 //! This module contains various helper function.
 
-use std::ops::{Add,  Sub};
+use std::ops::{Add, Sub};
 
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
 pub struct Vec2 {
-    
     x: f32,
     y: f32,
 }
@@ -18,7 +17,6 @@ impl Vec2 {
     /// let test = Vec2::new(1.0, 2.0);
     /// ```
     pub fn new(x: f32, y: f32) -> Vec2 {
-        
         Vec2 { x, y }
     }
 
@@ -57,34 +55,34 @@ impl Vec2 {
     pub fn dist_to(&self, other: &Vec2) -> f32 {
         (*self - *other).magnitude()
     }
-    
-    
 }
 
 impl Add for Vec2 {
     type Output = Vec2;
     fn add(self, other: Vec2) -> Vec2 {
-        Vec2 { x: self.x + other.x, y: self.y + other.y }
+        Vec2 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
     }
 }
 
 impl Sub for Vec2 {
     type Output = Vec2;
     fn sub(self, other: Vec2) -> Vec2 {
-        Vec2 { x: self.x - other.x, y: self.y - other.y }
+        Vec2 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
     }
 }
 
-
-
-
 /// Contains a line segment. can be used for intersection calculation.
-#[derive(Debug,  Clone)]
+#[derive(Debug, Clone)]
 pub struct Line {
     start: Vec2,
-    delta : Vec2,
+    delta: Vec2,
 }
-
 
 impl Line {
     /// Creates a new line.
@@ -94,22 +92,22 @@ impl Line {
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// ```
     pub fn new(start: Vec2, end: Vec2) -> Line {
-        Line { start, delta: end - start }
+        Line {
+            start,
+            delta: end - start,
+        }
     }
-    
-    
+
     /// Computes the length of a line.
     /// # Example
     /// ```
     /// use astar_lib::math_helper::{Vec2, Line};
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// let length = line_a.length();
-    /// ``` 
+    /// ```
     pub fn length(&self) -> f32 {
         self.delta.magnitude()
     }
-
-
 
     /// Checks if this line intersects with another line.
     ///
@@ -124,8 +122,8 @@ impl Line {
     pub fn intersects_with(&self, other: &Line) -> bool {
         let start_delta = other.start - self.start;
 
-        let base_det = - self.delta.x * other.delta.y + self.delta.y * other.delta.x;
-        let own_det = - start_delta.x * other.delta.y + start_delta.y * other.delta.x;
+        let base_det = -self.delta.x * other.delta.y + self.delta.y * other.delta.x;
+        let own_det = -start_delta.x * other.delta.y + start_delta.y * other.delta.x;
         let other_det = self.delta.x * start_delta.y - self.delta.y * start_delta.x;
 
         let my = own_det / base_det;
@@ -146,7 +144,7 @@ mod tests {
         let dist = vec_a.dist_to(&vec_b);
         assert!((dist - (2.0_f32).sqrt()).abs() < 0.00000000001);
     }
-    
+
     #[test]
     fn line_test() {
         let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
@@ -157,5 +155,4 @@ mod tests {
         let intersect = line_c.intersects_with(&line_b);
         assert!(!intersect);
     }
-
 }
