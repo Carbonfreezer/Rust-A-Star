@@ -40,12 +40,12 @@ impl InteractionCore {
         circle_radius: f32,
         circle_exclusion_radius: f32,
         max_line_length: f32,
-        edge_distance : f32,
+        edge_distance: f32,
         num_of_points: usize,
         num_of_links: usize,
     ) -> InteractionCore {
         let shader_program = Self::create_shader_program();
-        let (translation, color) = Self::get_const_shader(shader_program);
+        let (translation, color) = Self::get_translation_colors_parameters(shader_program);
         let line_vbo_vba = Self::create_line_vbo_and_vba();
         let circle_vba = Self::create_circle_vba(circle_radius);
         let mut graph_constructor =
@@ -71,8 +71,8 @@ impl InteractionCore {
         }
     }
 
-    fn create_line_vbo_and_vba() -> (u32, u32) {
-        let vertices: Vec<f32> = vec![0.0, 0.0, 0.0, 0.0];
+    /// Helper function to create a vbo and vba
+    fn create_vbo_vba(vertex_data: &[f32], buffer_type: GLenum) -> (u32, u32) {
         let mut vbo: u32 = 0;
         let mut vba: u32 = 0;
 
@@ -84,9 +84,9 @@ impl InteractionCore {
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (vertices.len() * size_of::<f32>()) as GLsizeiptr,
-                vertices.as_ptr() as *const GLvoid,
-                gl::DYNAMIC_DRAW,
+                (size_of_val(vertex_data)) as GLsizeiptr,
+                vertex_data.as_ptr() as *const GLvoid,
+                buffer_type,
             );
 
             gl::VertexAttribPointer(
@@ -105,6 +105,14 @@ impl InteractionCore {
         (vbo, vba)
     }
 
+    /// Creates vbo and vba for the line.
+    fn create_line_vbo_and_vba() -> (u32, u32) {
+        let vertices: Vec<f32> = vec![0.0, 0.0, 0.0, 0.0];
+
+        Self::create_vbo_vba(&vertices, gl::DYNAMIC_DRAW)
+    }
+
+    /// Creates the VBA specifically for a circle.
     fn create_circle_vba(radius: f32) -> u32 {
         let mut vertices: Vec<f32> = Vec::with_capacity(POINTS_IN_CIRCLE * 2);
 
@@ -117,39 +125,10 @@ impl InteractionCore {
             );
         }
 
-        let mut vbo: u32 = 0;
-        let mut vba: u32 = 0;
-
-        unsafe {
-            gl::CreateBuffers(1, &mut vbo);
-            gl::CreateVertexArrays(1, &mut vba);
-
-            gl::BindVertexArray(vba);
-            gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl::BufferData(
-                gl::ARRAY_BUFFER,
-                (vertices.len() * size_of::<f32>()) as GLsizeiptr,
-                vertices.as_ptr() as *const GLvoid,
-                gl::STATIC_DRAW,
-            );
-
-            gl::VertexAttribPointer(
-                0,
-                2,
-                gl::FLOAT,
-                gl::FALSE,
-                (2 * size_of::<f32>()) as GLint,
-                std::ptr::null(),
-            );
-            gl::EnableVertexAttribArray(0);
-            gl::BindVertexArray(0);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
-
-        vba
+        Self::create_vbo_vba(&vertices, gl::STATIC_DRAW).1
     }
 
-    fn get_const_shader(program: u32) -> (i32, i32) {
+    fn get_translation_colors_parameters(program: u32) -> (i32, i32) {
         let color_str = std::ffi::CString::new("PaintColor").unwrap();
         let translation_str = std::ffi::CString::new("translation").unwrap();
         let translation;
@@ -225,12 +204,7 @@ impl InteractionCore {
     }
 
     fn draw_line(&self, start: &Vec2, end: &Vec2, color: &[f32]) {
-        let vertices: Vec<f32> = start
-            .get_as_array()
-            .iter()
-            .chain(end.get_as_array().iter())
-            .copied()
-            .collect();
+        let vertices = start.get_combined_as_array(end);
         let color_ptr = color.as_ptr();
         let zero_vec = [0.0_f32, 0.0_f32];
         let position_ptr = zero_vec.as_ptr();

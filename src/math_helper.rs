@@ -2,8 +2,6 @@
 
 use std::ops::{Add, Sub};
 
-
-
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
 pub struct Vec2 {
@@ -34,25 +32,38 @@ impl Vec2 {
     pub fn get_as_array(&self) -> [f32; 2] {
         [self.x, self.y]
     }
-    
-    
+
+    /// Generates an array combination of our vector and a second one.
+    /// This is a specific function implemented to draw a line with OpenGL.
+    ///
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// let test_a = Vec2::new(1.0, 2.0);
+    /// let test_b = Vec2::new(0.0, 1.0);
+    /// let vec = test_a.get_combined_as_array(&test_b);
+    /// ```
+    pub fn get_combined_as_array(&self, other: &Vec2) -> [f32; 4] {
+        [self.x, self.y, other.x, other.y]
+    }
+
     /// Gets the magnitude and a normalized version of this vector in one call.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use astar_lib::math_helper::Vec2;
     /// let test = Vec2::new(1.0, 2.0);
     /// let (mag, norm) = test.get_mag_normalized();
     /// assert_eq!(mag, test.magnitude(), "They should be the same.")
-    /// ``` 
+    /// ```
     pub fn get_mag_normalized(&self) -> (f32, Vec2) {
         let mag = self.magnitude();
-        let norm_vec = Vec2::new(self.x / mag , self. y/mag);
-        (mag,norm_vec)
+        let norm_vec = Vec2::new(self.x / mag, self.y / mag);
+        (mag, norm_vec)
     }
 
     /// Computes the dort product of this vector with another.
-    /// 
+    ///
     /// # Example
     /// ```
     /// use astar_lib::math_helper::Vec2;
@@ -64,7 +75,7 @@ impl Vec2 {
     pub fn dot(&self, other: Vec2) -> f32 {
         self.x * other.x + self.y * other.y
     }
-    
+
     /// Gets an orthogonal version to this vector.
     ///
     /// # Example
@@ -76,7 +87,7 @@ impl Vec2 {
     /// assert_eq!(dot, 0.0, "orthogonal vectors")
     /// ```
     pub fn get_orthogonal(&self) -> Vec2 {
-         Vec2::new(self.y, -self.x)
+        Vec2::new(self.y, -self.x)
     }
 
     /// Gets the magnitude of a vector.
@@ -130,7 +141,7 @@ pub struct Line {
     delta: Vec2,
     magnitude: f32,
     unit_delta: Vec2,
-    orthogonal: Vec2
+    orthogonal: Vec2,
 }
 
 const EPSILON: f32 = 0.00001;
@@ -151,13 +162,11 @@ impl Line {
             delta,
             magnitude,
             unit_delta,
-            orthogonal
+            orthogonal,
         }
     }
 
-   
-    
-    /// Checks if an indicated point is in the voronoi region of the edge and if its distance 
+    /// Checks if an indicated point is in the voronoi region of the edge and if its distance
     /// is lower than the indicated range.
     ///
     /// # Example
@@ -166,16 +175,16 @@ impl Line {
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// let critical = line_a.is_in_critical_range(Vec2::new(0.5, 0.5), 0.001);
     /// assert!(critical, "We should be right on the line.");
-    /// ``` 
-    pub fn is_in_critical_range(&self, test_point : Vec2, range : f32) -> bool {
+    /// ```
+    pub fn is_in_critical_range(&self, test_point: Vec2, range: f32) -> bool {
         let rel_to_start = test_point - self.start;
-        
+
         // First we check if we are in the voronoi region of the edge.
         let rel_dist = rel_to_start.dot(self.unit_delta);
-        if !(EPSILON .. self.magnitude - EPSILON  ).contains(&rel_dist) {
+        if !(EPSILON..self.magnitude - EPSILON).contains(&rel_dist) {
             return false;
         }
-        
+
         let orthogonal_dist = self.orthogonal.dot(rel_to_start).abs();
         orthogonal_dist <= range
     }

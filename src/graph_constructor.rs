@@ -17,7 +17,7 @@ pub struct GraphConstructor {
     extension: f32,
     max_line_length: f32,
     exclusion_distance: f32,
-    edge_distance: f32
+    edge_distance: f32,
 }
 
 impl GraphConstructor {
@@ -34,22 +34,34 @@ impl GraphConstructor {
     /// use astar_lib::graph_constructor::GraphConstructor;
     /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
     /// ```
-    pub fn new(extension: f32, max_line_length: f32, exclusion_radius: f32, edge_distance : f32) -> GraphConstructor {
+    pub fn new(
+        extension: f32,
+        max_line_length: f32,
+        exclusion_radius: f32,
+        edge_distance: f32,
+    ) -> GraphConstructor {
         let exclusion_distance = 2.0 * exclusion_radius;
-        
-        assert!(exclusion_distance > edge_distance, "The exclusion distance should always be smaller");
-        assert!(max_line_length > exclusion_radius, "The maximum line length should always be larger");
+
+        assert!(
+            exclusion_distance > edge_distance,
+            "The exclusion distance should always be smaller"
+        );
+        assert!(
+            max_line_length > exclusion_radius,
+            "The maximum line length should always be larger"
+        );
         GraphConstructor {
             point_collection: vec![],
             point_pairing: vec![],
             extension,
             max_line_length,
             exclusion_distance,
-            edge_distance
+            edge_distance,
         }
     }
 
     /// Fills the point array with random points.
+    /// After too many attempts it stops adding points.
     ///
     /// # Example
     /// ```
@@ -139,9 +151,11 @@ impl GraphConstructor {
             }
 
             // Last we check for degenerate triangles.
-            if self.point_collection
+            if self
+                .point_collection
                 .iter()
-                .any(|point| line.is_in_critical_range(*point, self.edge_distance)) {
+                .any(|point| line.is_in_critical_range(*point, self.edge_distance))
+            {
                 continue;
             }
 
