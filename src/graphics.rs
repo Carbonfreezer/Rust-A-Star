@@ -300,6 +300,7 @@ impl InteractionCore {
             .find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius)
         {
             self.node_selected = Some(hit_node);
+            self.graph.search_graph(hit_node, hit_node);
         }
     }
 }
