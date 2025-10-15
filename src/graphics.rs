@@ -32,13 +32,15 @@ impl InteractionCore {
     /// * **circle_radius**: The radius with which we paint circles. Also used for clicking.
     /// * **circle_exclusion_radius**: An outer radius for a point to keep points aparts (poisson disc distribution).
     /// * **max_line_length**: The maximum length an edge in the graph may have.
+    /// * **edge_distance:** The minimum distance a point to an edge if within the voronoi region of the edge.
     /// * **num_of_points**: The number of nodes we have in the graph.
-    /// * **num_of_links**: The number of edge we have in the graph-
+    /// * **num_of_links**: The number of edge we have in the graph.
     ///
     pub fn new(
         circle_radius: f32,
         circle_exclusion_radius: f32,
         max_line_length: f32,
+        edge_distance : f32,
         num_of_points: usize,
         num_of_links: usize,
     ) -> InteractionCore {
@@ -47,7 +49,7 @@ impl InteractionCore {
         let line_vbo_vba = Self::create_line_vbo_and_vba();
         let circle_vba = Self::create_circle_vba(circle_radius);
         let mut graph_constructor =
-            GraphConstructor::new(1.0, max_line_length, circle_exclusion_radius);
+            GraphConstructor::new(1.0, max_line_length, circle_exclusion_radius, edge_distance);
         graph_constructor.add_random_points(num_of_points);
         graph_constructor.add_random_links(num_of_links);
         let graph = graph_constructor.generate_graph();
@@ -333,17 +335,19 @@ impl InteractionCore {
 /// * **circle_radius**: The radius with which we paint circles. Also used for clicking.
 /// * **circle_exclusion_radius**: An outer radius for a point to keep points aparts (poisson disc distribution).
 /// * **max_line_length**: The maximum length an edge in the graph may have.
+/// * **edge_distance:** The minimum distance a point to an edge if within the voronoi region of the edge.
 /// * **num_of_points**: The number of nodes we have in the graph.
-/// * **num_of_links**: The number of edge we have in the graph-
+/// * **num_of_links**: The number of edge we have in the graph.
 /// # Example
 /// ```no_run
 ///  use astar_lib::graphics;
-///  graphics::run_prog(0.015, 0.04, 0.2, 300, 800)
+///  graphics::run_prog(0.015, 0.04, 0.2, 0.02, 300, 800);
 /// ```
 pub fn run_prog(
     circle_radius: f32,
     circle_exclusion_radius: f32,
     max_line_length: f32,
+    edge_distance: f32,
     num_of_points: usize,
     num_of_links: usize,
 ) {
@@ -370,6 +374,7 @@ pub fn run_prog(
         circle_radius,
         circle_exclusion_radius,
         max_line_length,
+        edge_distance,
         num_of_points,
         num_of_links,
     );

@@ -2,6 +2,8 @@
 
 use std::ops::{Add, Sub};
 
+
+
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
 pub struct Vec2 {
@@ -29,8 +31,52 @@ impl Vec2 {
     /// let test = Vec2::new(1.0, 2.0);
     /// let vec = test.get_as_array();
     /// ```
-    pub fn get_as_array(&self) -> Vec<f32> {
-        vec![self.x, self.y]
+    pub fn get_as_array(&self) -> [f32; 2] {
+        [self.x, self.y]
+    }
+    
+    
+    /// Gets the magnitude and a normalized version of this vector in one call.
+    /// 
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// let test = Vec2::new(1.0, 2.0);
+    /// let (mag, norm) = test.get_mag_normalized();
+    /// assert_eq!(mag, test.magnitude(), "They should be the same.")
+    /// ``` 
+    pub fn get_mag_normalized(&self) -> (f32, Vec2) {
+        let mag = self.magnitude();
+        let norm_vec = Vec2::new(self.x / mag , self. y/mag);
+        (mag,norm_vec)
+    }
+
+    /// Computes the dort product of this vector with another.
+    /// 
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// let test_a = Vec2::new(1.0, 0.0);
+    /// let test_b = Vec2::new(0.0, 1.0);
+    /// let dot = test_a.dot(test_b);
+    /// assert_eq!(dot, 0.0, "orthogonal vectors")
+    /// ```
+    pub fn dot(&self, other: Vec2) -> f32 {
+        self.x * other.x + self.y * other.y
+    }
+    
+    /// Gets an orthogonal version to this vector.
+    ///
+    /// # Example
+    /// ```
+    /// use astar_lib::math_helper::Vec2;
+    /// let test_a = Vec2::new(1.0, 2.0);
+    /// let test_b = test_a.get_orthogonal();
+    /// let dot = test_a.dot(test_b);
+    /// assert_eq!(dot, 0.0, "orthogonal vectors")
+    /// ```
+    pub fn get_orthogonal(&self) -> Vec2 {
+         Vec2::new(self.y, -self.x)
     }
 
     /// Gets the magnitude of a vector.
@@ -82,7 +128,12 @@ impl Sub for Vec2 {
 pub struct Line {
     start: Vec2,
     delta: Vec2,
+    magnitude: f32,
+    unit_delta: Vec2,
+    orthogonal: Vec2
 }
+
+const EPSILON: f32 = 0.00001;
 
 impl Line {
     /// Creates a new line.
@@ -92,21 +143,41 @@ impl Line {
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
     /// ```
     pub fn new(start: Vec2, end: Vec2) -> Line {
+        let delta = end - start;
+        let (magnitude, unit_delta) = delta.get_mag_normalized();
+        let orthogonal = unit_delta.get_orthogonal();
         Line {
             start,
-            delta: end - start,
+            delta,
+            magnitude,
+            unit_delta,
+            orthogonal
         }
     }
 
-    /// Computes the length of a line.
+   
+    
+    /// Checks if an indicated point is in the voronoi region of the edge and if its distance 
+    /// is lower than the indicated range.
+    ///
     /// # Example
     /// ```
     /// use astar_lib::math_helper::{Vec2, Line};
     /// let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
-    /// let length = line_a.length();
-    /// ```
-    pub fn length(&self) -> f32 {
-        self.delta.magnitude()
+    /// let critical = line_a.is_in_critical_range(Vec2::new(0.5, 0.5), 0.001);
+    /// assert!(critical, "We should be right on the line.");
+    /// ``` 
+    pub fn is_in_critical_range(&self, test_point : Vec2, range : f32) -> bool {
+        let rel_to_start = test_point - self.start;
+        
+        // First we check if we are in the voronoi region of the edge.
+        let rel_dist = rel_to_start.dot(self.unit_delta);
+        if !(EPSILON .. self.magnitude - EPSILON  ).contains(&rel_dist) {
+            return false;
+        }
+        
+        let orthogonal_dist = self.orthogonal.dot(rel_to_start).abs();
+        orthogonal_dist <= range
     }
 
     /// Checks if this line intersects with another line.
@@ -129,7 +200,7 @@ impl Line {
         let my = own_det / base_det;
         let lambda = other_det / base_det;
 
-        (0.00001..=0.99999).contains(&my) && (0.00001..=0.99999).contains(&lambda)
+        (EPSILON..1.0 - EPSILON).contains(&my) && (EPSILON..1.0 - EPSILON).contains(&lambda)
     }
 }
 

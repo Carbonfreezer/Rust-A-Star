@@ -2,7 +2,7 @@
 //! Which means it should have a certain number of nodes and edges.
 //! The nodes should have a certain minimum distance to each other.
 //! The edges should not intersect and there should be a minimum distance
-//! of a node to an edge. 
+//! of a node to an edge.
 
 use super::math_helper::{Line, Vec2};
 use crate::a_star::NavGraph;
@@ -17,6 +17,7 @@ pub struct GraphConstructor {
     extension: f32,
     max_line_length: f32,
     exclusion_distance: f32,
+    edge_distance: f32
 }
 
 impl GraphConstructor {
@@ -26,19 +27,25 @@ impl GraphConstructor {
     /// * **extension:** The graph will have coordinates ranging from -extension..extension
     /// * **max_line_length:** The maximum length and edge can have.
     /// * **exclusion_radius:** The outer radius of each node to keep distance.
+    /// * **edge_distance:** The minimum distance a point to an edge if within the voronoi region of the edge.
     ///
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
     /// ```
-    pub fn new(extension: f32, max_line_length: f32, exclusion_radius: f32) -> GraphConstructor {
+    pub fn new(extension: f32, max_line_length: f32, exclusion_radius: f32, edge_distance : f32) -> GraphConstructor {
+        let exclusion_distance = 2.0 * exclusion_radius;
+        
+        assert!(exclusion_distance > edge_distance, "The exclusion distance should always be smaller");
+        assert!(max_line_length > exclusion_radius, "The maximum line length should always be larger");
         GraphConstructor {
             point_collection: vec![],
             point_pairing: vec![],
             extension,
             max_line_length,
-            exclusion_distance: 2.0 * exclusion_radius,
+            exclusion_distance,
+            edge_distance
         }
     }
 
@@ -47,7 +54,7 @@ impl GraphConstructor {
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
     /// constructor.add_random_points(1000);
     /// ```
     pub fn add_random_points(&mut self, num_of_points: usize) {
@@ -76,7 +83,7 @@ impl GraphConstructor {
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
     /// constructor.add_random_points(1000);
     /// constructor.add_random_links(5000);
     /// ```
@@ -118,17 +125,23 @@ impl GraphConstructor {
             {
                 continue;
             }
-            // Check if line too long.
+
             let line = Line::new(
                 self.point_collection[first_ind],
                 self.point_collection[second_ind],
             );
-
             // Check if line intersects with a different one.
             if link_collection
                 .iter()
                 .any(|other_line| other_line.intersects_with(&line))
             {
+                continue;
+            }
+
+            // Last we check for degenerate triangles.
+            if self.point_collection
+                .iter()
+                .any(|point| line.is_in_critical_range(*point, self.edge_distance)) {
                 continue;
             }
 
@@ -145,7 +158,7 @@ impl GraphConstructor {
     /// # Example
     /// ```
     /// use astar_lib::graph_constructor::GraphConstructor;
-    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
+    /// let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
     /// constructor.add_random_points(1000);
     /// constructor.add_random_links(5000);
     /// let _graph = constructor.generate_graph();
@@ -177,7 +190,7 @@ mod tests {
 
     #[test]
     fn vec_construction_test() {
-        let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02);
+        let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
         constructor.add_random_points(1000);
         constructor.add_random_links(5000);
         constructor.generate_graph();
