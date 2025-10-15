@@ -46,7 +46,8 @@ An example can be seen in the following image:
     <figcaption>Screenshot of the A Star Program</figcaption>
 </figure>
 
-
+## License
+The program is published under MIT license as explained in the [license file](LICENSE).
 
 
 
