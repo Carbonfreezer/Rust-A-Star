@@ -1,4 +1,5 @@
-//! This is the library for the A start algorithm. It contains several sub modules.
+//! This is the library for the A star algorithm applied to two-dimensional navigation graphs. 
+//! It contains several submodules.
 //! [graph_constructor] and [graphics] are mostly helper system to create the interactive application. 
 //! 
 

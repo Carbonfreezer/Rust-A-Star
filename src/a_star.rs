@@ -41,7 +41,9 @@ impl NavNode {
     }
 }
 
-/// The graph structure that may be used for navigation.
+/// The graph structure that may be used for navigation, with all the manipulation and searching 
+/// options. Nodes in this graph are supposed here to represent positions in a twi dimensional coordinate
+/// system and the edge annotation is always the distance between those positions.
 pub struct NavGraph {
     nodes: Vec<NavNode>,
     links: Vec<(usize, usize)>,
