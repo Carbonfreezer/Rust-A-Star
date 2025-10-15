@@ -41,15 +41,6 @@ impl GraphConstructor {
         edge_distance: f32,
     ) -> GraphConstructor {
         let exclusion_distance = 2.0 * exclusion_radius;
-
-        assert!(
-            exclusion_distance > edge_distance,
-            "The exclusion distance should always be smaller"
-        );
-        assert!(
-            max_line_length > exclusion_radius,
-            "The maximum line length should always be larger"
-        );
         GraphConstructor {
             point_collection: vec![],
             point_pairing: vec![],
@@ -103,6 +94,10 @@ impl GraphConstructor {
         self.point_pairing = Vec::with_capacity(num_of_links);
         let mut counter = 0;
         let num_of_points = self.point_collection.len();
+        if num_of_points == 0 {
+            return;
+        }
+        
         let mut link_collection: Vec<Line> = Vec::with_capacity(num_of_links);
         while (self.point_pairing.len() < num_of_links) && (counter < MAX_ITERATIONS) {
             counter += 1;
@@ -166,8 +161,6 @@ impl GraphConstructor {
 
     /// Generates a graph
     ///
-    /// # Panic
-    /// Points and links have to be added upfront.
     ///
     /// # Example
     /// ```
@@ -178,10 +171,6 @@ impl GraphConstructor {
     /// let _graph = constructor.generate_graph();
     /// ```
     pub fn generate_graph(&mut self) -> NavGraph {
-        assert!(
-            !self.point_collection.is_empty() && !self.point_pairing.is_empty(),
-            "Graph not initialized."
-        );
         let mut graph = NavGraph::new();
 
         let point_handle: Vec<usize> = self
@@ -206,6 +195,13 @@ mod tests {
     fn vec_construction_test() {
         let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
         constructor.add_random_points(1000);
+        constructor.add_random_links(5000);
+        constructor.generate_graph();
+    }
+    
+    #[test]
+    fn vec_test_empty_constructs() {
+        let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
         constructor.add_random_links(5000);
         constructor.generate_graph();
     }
