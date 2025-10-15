@@ -1,13 +1,11 @@
 //! Helper module to generate an interesting graph.
 
-
 use super::math_helper::{Line, Vec2};
 use crate::a_star::NavGraph;
 use rand::seq::IteratorRandom;
 
 /// The maximum number of iterations we make per attempt for link generation
 const MAX_ITERATIONS: usize = 100000;
-
 
 /// Creates a graph.
 /// The nodes should have a certain minimum distance to each other.
@@ -99,7 +97,7 @@ impl GraphConstructor {
         if num_of_points == 0 {
             return;
         }
-        
+
         let mut link_collection: Vec<Line> = Vec::with_capacity(num_of_links);
         while (self.point_pairing.len() < num_of_links) && (counter < MAX_ITERATIONS) {
             counter += 1;
@@ -200,7 +198,7 @@ mod tests {
         constructor.add_random_links(5000);
         constructor.generate_graph();
     }
-    
+
     #[test]
     fn vec_test_empty_constructs() {
         let mut constructor = GraphConstructor::new(1.0, 0.3, 0.02, 0.01);
