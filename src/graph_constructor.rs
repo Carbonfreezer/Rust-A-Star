@@ -1,8 +1,5 @@
 //! Helper module to generate an interesting graph.
-//! Which means it should have a certain number of nodes and edges.
-//! The nodes should have a certain minimum distance to each other.
-//! The edges should not intersect and there should be a minimum distance
-//! of a node to an edge.
+
 
 use super::math_helper::{Line, Vec2};
 use crate::a_star::NavGraph;
@@ -11,6 +8,11 @@ use rand::seq::IteratorRandom;
 /// The maximum number of iterations we make per attempt for link generation
 const MAX_ITERATIONS: usize = 100000;
 
+
+/// Creates a graph.
+/// The nodes should have a certain minimum distance to each other.
+/// The edges should not intersect and there should be a minimum distance
+/// of a node to an edge.
 pub struct GraphConstructor {
     point_collection: Vec<Vec2>,
     point_pairing: Vec<(usize, usize)>,

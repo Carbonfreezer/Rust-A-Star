@@ -7,6 +7,7 @@ use glume::gl;
 use glume::gl::types::*;
 use glume::window::{Event, MouseButton};
 
+/// All the callbacks from the glume framework and initialization stuff is handled here. 
 pub struct InteractionCore {
     screen_extension: (f32, f32),
     cursor_pos: Vec2,
@@ -24,6 +25,7 @@ pub struct InteractionCore {
 }
 
 const POINTS_IN_CIRCLE: usize = 20;
+
 
 impl InteractionCore {
     /// Generates the interaction core from several parameters.
