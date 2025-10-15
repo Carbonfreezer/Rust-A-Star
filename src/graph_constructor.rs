@@ -1,7 +1,12 @@
 //! Helper module to generate an interesting graph.
+//! Which means it should have a certain number of nodes and edges.
+//! The nodes should have a certain minimum distance to each other.
+//! The edges should not intersect and there should be a minimum distance
+//! of a node to an edge. 
 
 use super::math_helper::{Line, Vec2};
 use crate::a_star::NavGraph;
+use rand::seq::IteratorRandom;
 
 /// The maximum number of iterations we make per attempt for link generation
 const MAX_ITERATIONS: usize = 100000;
@@ -83,12 +88,25 @@ impl GraphConstructor {
         while (self.point_pairing.len() < num_of_links) && (counter < MAX_ITERATIONS) {
             counter += 1;
             let first_ind = rand::random_range(0..num_of_points);
-            let second_ind = rand::random_range(0..num_of_points);
+            let first_pos = self.point_collection[first_ind];
 
-            // Check if dummy line.
-            if first_ind == second_ind {
+            // Now we filter for other points that are in max len range.
+            let partner_index = self
+                .point_collection
+                .iter()
+                .enumerate()
+                .filter(|(index, position)| {
+                    (*index != first_ind)
+                        && (**position - first_pos).magnitude() < self.max_line_length
+                })
+                .map(|(index, _)| index)
+                .choose(&mut rand::rng());
+
+            // In this case we have not found a node, that is not ourself and is close enough.
+            if partner_index.is_none() {
                 continue;
             }
+            let second_ind = partner_index.unwrap();
 
             // Check if line already contained in one form.
             let test_pairing = (first_ind, second_ind);
@@ -100,15 +118,12 @@ impl GraphConstructor {
             {
                 continue;
             }
-
+            // Check if line too long.
             let line = Line::new(
                 self.point_collection[first_ind],
                 self.point_collection[second_ind],
             );
-            // Check if line too long.
-            if line.length() > self.max_line_length {
-                continue;
-            }
+
             // Check if line intersects with a different one.
             if link_collection
                 .iter()

@@ -215,16 +215,10 @@ impl InteractionCore {
         let position_ptr = center_array.as_ptr();
 
         unsafe {
-            gl::UseProgram(self.shader_program);
-            gl::BindVertexArray(self.circle_vba);
-
             // Upload variables.
             gl::Uniform3fv(self.color, 1, color_ptr);
             gl::Uniform2fv(self.translation, 1, position_ptr);
-
             gl::DrawArrays(gl::TRIANGLE_FAN, 0, POINTS_IN_CIRCLE as i32);
-            gl::BindVertexArray(0);
-            gl::UseProgram(0);
         }
     }
 
@@ -240,9 +234,6 @@ impl InteractionCore {
         let position_ptr = zero_vec.as_ptr();
 
         unsafe {
-            gl::UseProgram(self.shader_program);
-            gl::BindVertexArray(self.line_vbo_vba.1);
-            gl::BindBuffer(gl::ARRAY_BUFFER, self.line_vbo_vba.0);
             gl::Uniform3fv(self.color, 1, color_ptr);
             gl::Uniform2fv(self.translation, 1, position_ptr);
             gl::BufferData(
@@ -252,9 +243,6 @@ impl InteractionCore {
                 gl::DYNAMIC_DRAW,
             );
             gl::DrawArrays(gl::LINES, 0, 2);
-            gl::BindVertexArray(0);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-            gl::UseProgram(0);
         }
     }
 
@@ -269,6 +257,11 @@ impl InteractionCore {
 
     /// Gets invoked to render everything new. First paints the lines and then the nodes.
     pub fn redraw(&self) {
+        unsafe {
+            gl::UseProgram(self.shader_program);
+            gl::BindVertexArray(self.line_vbo_vba.1);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.line_vbo_vba.0);
+        }
         for (start, end, solution) in self.graph.get_all_links_with_solution_hint() {
             let color_state = if solution {
                 NodeState::Solution
@@ -277,9 +270,16 @@ impl InteractionCore {
             };
             self.draw_line(start, end, &Self::get_color(&color_state))
         }
-
+        unsafe {
+            gl::BindVertexArray(self.circle_vba);
+        }
         for (position, state) in self.graph.get_all_nodes_with_state() {
             self.draw_circle(position, &Self::get_color(state));
+        }
+        unsafe {
+            gl::BindVertexArray(0);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+            gl::UseProgram(0);
         }
     }
 
