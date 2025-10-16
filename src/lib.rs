@@ -10,3 +10,5 @@ pub mod a_star;
 #[doc(hidden)]
 pub mod vector;
 
+pub use a_star::{NodeState, NavGraph};
+
