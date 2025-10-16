@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "A Star algorithm for two dimensional navigations graphs."
 repository = "https://github.com/Carbonfreezer/Rust-A-Star"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 keywords = ["gamedev", "graphs", "navigation"]
 
 
