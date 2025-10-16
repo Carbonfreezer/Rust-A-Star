@@ -2,7 +2,7 @@
 
 use crate::a_star::{NavGraph, NodeState};
 use crate::graph_constructor::GraphConstructor;
-use crate::math_helper::Vec2;
+use crate::vector::Vec2;
 use glume::gl;
 use glume::gl::types::*;
 use glume::window::{Event, MouseButton};

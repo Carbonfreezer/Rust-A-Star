@@ -1,15 +1,15 @@
-//! This module contains the core a star algorithm
+//! A\* algorithm implemented for two-dimensional nav graphs.
 //!
-use super::math_helper::Vec2;
+use super::vector::Vec2;
 
 /// A declaration for the current state a node in the nav graph can be in.
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeState {
     /// The node is in its original state unvisited.
     Clear,
-    /// The node has been visited but it is still in the opened state.
+    /// The node has been visited, but it is still in the opened state.
     Visited,
-    /// The node has been closed.
+    /// The node has been closed and is therefor completely analyzed.
     Closed,
     /// At the end of the search the nodes are marked as a part of the solution.
     Solution,
@@ -25,7 +25,7 @@ struct NavNode {
 }
 
 impl NavNode {
-    pub fn new(position: Vec2) -> Self {
+     fn new(position: Vec2) -> Self {
         Self {
             position,
             connections: Vec::new(),
@@ -36,7 +36,7 @@ impl NavNode {
         }
     }
 
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.state = NodeState::Clear;
     }
 }
@@ -75,7 +75,7 @@ impl NavGraph {
     /// # Example
     ///
     /// ```
-    ///  use astar_lib::math_helper::Vec2;
+    ///  use astar_lib::vector::Vec2;
     ///  use astar_lib::a_star::NavGraph;
     ///  let mut graph = NavGraph::new();
     ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
@@ -99,7 +99,7 @@ impl NavGraph {
     /// # Example
     ///
     /// ```
-    ///  use astar_lib::math_helper::Vec2;
+    ///  use astar_lib::vector::Vec2;
     ///  use astar_lib::a_star::NavGraph;
     ///  let mut graph = NavGraph::new();
     ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
@@ -125,7 +125,7 @@ impl NavGraph {
     ///
     /// # Example
     /// ```
-    /// use astar_lib::math_helper::Vec2;
+    /// use astar_lib::vector::Vec2;
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
@@ -155,7 +155,7 @@ impl NavGraph {
     ///
     /// # Example
     /// ```
-    /// use astar_lib::math_helper::Vec2;
+    /// use astar_lib::vector::Vec2;
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
@@ -170,7 +170,7 @@ impl NavGraph {
     ///
     /// # Example
     /// ```
-    /// use astar_lib::math_helper::Vec2;
+    /// use astar_lib::vector::Vec2;
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
@@ -188,16 +188,8 @@ impl NavGraph {
         self.nodes[node2].connections.push((node1, dist));
         self.links.push((node1, node2));
     }
-
-    /// Resets the search and puts everything back to the base.
-    /// # Example
-    /// ```
-    /// use astar_lib::math_helper::Vec2;
-    /// use astar_lib::a_star::NavGraph;
-    /// let mut graph = NavGraph::new();
-    /// graph.reset_graph_search()
-    /// ```
-    pub fn reset_graph_search(&mut self) {
+    
+    fn reset_graph_search(&mut self) {
         for node in self.nodes.iter_mut() {
             node.reset();
         }
@@ -228,7 +220,7 @@ impl NavGraph {
     /// # Example:
     ///
     ///  ```
-    ///  use astar_lib::math_helper::Vec2;
+    ///  use astar_lib::vector::Vec2;
     ///  use astar_lib::a_star::NavGraph;
     ///  let mut graph = NavGraph::new();
     ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));

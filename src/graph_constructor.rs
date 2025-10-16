@@ -1,6 +1,7 @@
 //! Helper module to generate an interesting graph.
 
-use super::math_helper::{Line, Vec2};
+use super::vector::Vec2;
+use super::line::Line;
 use crate::a_star::NavGraph;
 use rand::seq::IteratorRandom;
 
