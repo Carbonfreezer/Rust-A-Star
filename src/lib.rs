@@ -3,9 +3,6 @@
 //! with "cargo run -r --example openglapp"
 
 
-#![no_std]
-
-
 pub mod a_star;
 #[doc(hidden)]
 pub mod vector;
