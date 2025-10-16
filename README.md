@@ -1,21 +1,33 @@
 # Rust A Star
 
 ## Overview
-This Rust program includes the library *astar_lib* and the program *astar_test*. It implements the A* algorithm.
+This Rust project contains the library *astar_lib*. It implements the A* algorithm.
 The graph is supposed to be a navigation graph. Every node represents a position in two-dimensional coordinates, and
-the edge annotation is the distance between the two nodes that are connected via an edge.
-Besides that, it contains a construction system for suitable graphs and an OpenGL visualization. The project comes
-with complete documentation and a unit test suite.
+the edge annotation is the distance between the two nodes that are connected via an edge. This is an
+algorithm that is used in games.
+
+The library comes with a relatively extensive example in the form of an OpenGL app *openglapp*.
+It contains a construction system for
+suitable graphs and an OpenGL visualization. The project comes with complete documentation and a unit test suite.
 
 ## Contents
-The library *astar_lib* contains four modules.
+The library *astar_lib* contains the module **a_star**, which includes the search algorithm in the class *NavGraph*.
+This lib also contains an undocumented **vector** module, which is used internally and by the example app.
 
-1. **math_helper**: This module contains a vector class *Vec2*, that is used almost everywhere. Additionally, there is a *Line* class in there that helps with the graph construction.
-2. **a_star**: This is the core module that represents the graph representation and the search algorithm (*NavGraph*)
-3. **graph_constructor**: This is a helper module that generates random graphs that obey a couple of rules to be pretty.
-4. **graphics**: This module does the visualization with OpenGL and the basic interaction.
+The example app contains several modules:
+
+1. **line**: This contains the *Line* class in there that helps with the graph construction.
+2. **graph_constructor**: This is a helper module that generates random graphs that obey a couple of rules to be pretty.
+3. **graphics**: This module does the visualization with OpenGL and the basic interaction.
 
 ## Program Usage
+
+To start the demo app, use
+
+```
+cargo run -r --example openglapp
+```
+
 With the left mouse button, you can pick one of the graph nodes. On mouse-over a different node, the system
 computes and generates the shortest path if possible, and displays the path and the states of the nodes in the A*
 algorithm after completion. By clicking the right mouse button, a new graph gets generated.
@@ -54,9 +66,8 @@ where the file *Cargo.toml* is contained. From here, you may now run several com
 
 - **cargo test**: This builds the program and runs all contained unit tests.
 - **cargo doc --open**: Generates and opens the documentation in the browser.
-- **cargo run -r**: Generates a release build and starts the program.
+- **cargo run -r --example openglapp** : Start the app.
 
 ## License
 The program is published under the MIT license as explained in the [license file](LICENSE).
-
 
