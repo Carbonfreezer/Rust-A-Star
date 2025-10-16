@@ -19,34 +19,8 @@ impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
         Vec2 { x, y }
     }
-
-    /// Returns the position as an vertex array.
-    /// Primarily intended for the use of OpenGL
-    ///
-    /// # Example
-    /// ```
-    /// use astar_lib::vector::Vec2;
-    /// let test = Vec2::new(1.0, 2.0);
-    /// let vec = test.get_as_array();
-    /// ```
-    pub fn get_as_array(&self) -> [f32; 2] {
-        [self.x, self.y]
-    }
-
-    /// Generates an array combination of our vector and a second one.
-    /// This is a specific function implemented to draw a line with OpenGL.
-    ///
-    /// # Example
-    /// ```
-    /// use astar_lib::vector::Vec2;
-    /// let test_a = Vec2::new(1.0, 2.0);
-    /// let test_b = Vec2::new(0.0, 1.0);
-    /// let vec = test_a.get_combined_as_array(&test_b);
-    /// ```
-    pub fn get_combined_as_array(&self, other: &Vec2) -> [f32; 4] {
-        [self.x, self.y, other.x, other.y]
-    }
-
+    
+    
     /// Gets the magnitude and a normalized version of this vector in one call.
     ///
     /// # Example
@@ -131,6 +105,20 @@ impl Sub for Vec2 {
             x: self.x - other.x,
             y: self.y - other.y,
         }
+    }
+}
+
+impl From<[f32;2]> for Vec2 {
+    fn from(v: [f32;2]) -> Vec2
+    {
+        Vec2{x: v[0], y: v[1]}
+    }
+}
+
+impl From<Vec2> for [f32;2] {
+    fn from(v: Vec2) -> [f32; 2]
+    {
+        [v.x, v.y]
     }
 }
 

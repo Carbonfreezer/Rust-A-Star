@@ -14,6 +14,7 @@ pub enum NodeState {
     /// At the end of the search the nodes are marked as a part of the solution.
     Solution,
 }
+
 #[derive(Debug, Clone)]
 struct NavNode {
     position: Vec2,
@@ -75,18 +76,17 @@ impl NavGraph {
     /// # Example
     ///
     /// ```
-    ///  use astar_lib::vector::Vec2;
     ///  use astar_lib::a_star::NavGraph;
     ///  let mut graph = NavGraph::new();
-    ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    ///  let p1 = graph.add_node(Vec2::new(0.5, 0.5));
+    ///  let p0 = graph.add_node([0.0, 0.0]);
+    ///  let p1 = graph.add_node([0.5, 0.5]);
     ///
     /// for (pos, state) in graph.get_all_nodes_with_state() {
     ///     println!("Node {pos:?} state: {state:?}");
     /// }
     /// ```
-    pub fn get_all_nodes_with_state(&self) -> impl Iterator<Item = (&Vec2, &NodeState)> {
-        self.nodes.iter().map(|node| (&node.position, &node.state))
+    pub fn get_all_nodes_with_state(&self) -> impl Iterator<Item = ([f32;2], &NodeState)> {
+        self.nodes.iter().map(|node| ((node.position).into(), &node.state))
     }
 
     /// Checks if a link handed over is a solution link.
@@ -99,22 +99,21 @@ impl NavGraph {
     /// # Example
     ///
     /// ```
-    ///  use astar_lib::vector::Vec2;
     ///  use astar_lib::a_star::NavGraph;
     ///  let mut graph = NavGraph::new();
-    ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    ///  let p1 = graph.add_node(Vec2::new(0.5, 0.5));
+    ///  let p0 = graph.add_node([0.0, 0.0]);
+    ///  let p1 = graph.add_node([0.5, 0.5]);
     ///  graph.connect_nodes(p0, p1);
     ///
     /// for (start, end, solution) in graph.get_all_links_with_solution_hint() {
     ///     println!("Link from {start:?} to {end:?} is solution: {solution}");
     /// }
     /// ```
-    pub fn get_all_links_with_solution_hint(&self) -> impl Iterator<Item = (&Vec2, &Vec2, bool)> {
+    pub fn get_all_links_with_solution_hint(&self) -> impl Iterator<Item = ([f32;2], [f32;2], bool)> {
         self.links.iter().map(|(start_node, end_node)| {
             (
-                &self.nodes[*start_node].position,
-                &self.nodes[*end_node].position,
+                self.nodes[*start_node].position.into(),
+                self.nodes[*end_node].position.into(),
                 self.is_solution_link(start_node, end_node),
             )
         })
@@ -125,18 +124,18 @@ impl NavGraph {
     ///
     /// # Example
     /// ```
-    /// use astar_lib::vector::Vec2;
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
-    /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    /// let index = graph.find_nearest_node_with_radius(&Vec2::new(0.00001, 0.0), 0.01).unwrap();
+    /// let p0 = graph.add_node([0.0, 0.0]);
+    /// let index = graph.find_nearest_node_with_radius([0.00001, 0.0], 0.01).unwrap();
     /// ```
-    pub fn find_nearest_node_with_radius(&self, position: &Vec2, radius: f32) -> Option<usize> {
+    pub fn find_nearest_node_with_radius(&self, position: [f32;2], radius: f32) -> Option<usize> {
         let mut min_dist = f32::MAX;
         let mut best_index = 0usize;
+        let probing = Vec2::from(position);
 
         for (index, node) in self.nodes.iter().enumerate() {
-            let dist = node.position.dist_to(position);
+            let dist = node.position.dist_to(&probing);
             if dist < min_dist {
                 min_dist = dist;
                 best_index = index;
@@ -155,14 +154,13 @@ impl NavGraph {
     ///
     /// # Example
     /// ```
-    /// use astar_lib::vector::Vec2;
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
-    /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
+    /// let p0 = graph.add_node([0.0, 0.0]);
     /// ```
-    pub fn add_node(&mut self, position: Vec2) -> usize {
+    pub fn add_node(&mut self, position: [f32;2]) -> usize {
         let ret_val = self.nodes.len();
-        self.nodes.push(NavNode::new(position));
+        self.nodes.push(NavNode::new(Vec2::from(position)));
         ret_val
     }
 
@@ -170,11 +168,10 @@ impl NavGraph {
     ///
     /// # Example
     /// ```
-    /// use astar_lib::vector::Vec2;
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
-    /// let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    /// let p1 = graph.add_node(Vec2::new(1.0, 1.0));
+    /// let p0 = graph.add_node([0.0, 0.0]);
+    /// let p1 = graph.add_node([1.0, 1.0]);
     /// graph.connect_nodes(p0, p1);
     /// ```
     pub fn connect_nodes(&mut self, node1: usize, node2: usize) {
@@ -188,7 +185,7 @@ impl NavGraph {
         self.nodes[node2].connections.push((node1, dist));
         self.links.push((node1, node2));
     }
-    
+
     fn reset_graph_search(&mut self) {
         for node in self.nodes.iter_mut() {
             node.reset();
@@ -223,11 +220,11 @@ impl NavGraph {
     ///  use astar_lib::vector::Vec2;
     ///  use astar_lib::a_star::NavGraph;
     ///  let mut graph = NavGraph::new();
-    ///  let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-    ///  let p1 = graph.add_node(Vec2::new(0.5, 0.5));
-    ///  let p2 = graph.add_node(Vec2::new(1.0, 0.0));
-    ///  let p3 = graph.add_node(Vec2::new(1.0, 1.0));
-    ///  let p4 = graph.add_node(Vec2::new(0.1, 0.0));
+    ///  let p0 = graph.add_node([0.0, 0.0]);
+    ///  let p1 = graph.add_node([0.5, 0.5]);
+    ///  let p2 = graph.add_node([1.0, 0.0]);
+    ///  let p3 = graph.add_node([1.0, 1.0]);
+    ///  let p4 = graph.add_node([0.1, 0.0]);
     ///  graph.connect_nodes(p0, p1);
     ///  graph.connect_nodes(p1, p2);
     ///  graph.connect_nodes(p0, p2);
@@ -313,12 +310,12 @@ mod tests {
     fn base_test() {
         let mut graph = NavGraph::new();
 
-        let p0 = graph.add_node(Vec2::new(0.0, 0.0));
-        let p1 = graph.add_node(Vec2::new(0.5, 0.5));
-        let p2 = graph.add_node(Vec2::new(1.0, 0.0));
-        let p3 = graph.add_node(Vec2::new(1.0, 1.0));
-        let p4 = graph.add_node(Vec2::new(0.1, 0.0));
-        let p5 = graph.add_node(Vec2::new(2.0, 2.0));
+        let p0 = graph.add_node([0.0, 0.0]);
+        let p1 = graph.add_node([0.5, 0.5]);
+        let p2 = graph.add_node([1.0, 0.0]);
+        let p3 = graph.add_node([1.0, 1.0]);
+        let p4 = graph.add_node([0.1, 0.0]);
+        let p5 = graph.add_node([2.0, 2.0]);
 
         graph.connect_nodes(p0, p1);
         graph.connect_nodes(p1, p2);

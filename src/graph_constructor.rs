@@ -177,7 +177,7 @@ impl GraphConstructor {
         let point_handle: Vec<usize> = self
             .point_collection
             .iter()
-            .map(|position| graph.add_node(*position))
+            .map(|position| graph.add_node((*position).into()))
             .collect();
         for (first, second) in &self.point_pairing {
             graph.connect_nodes(point_handle[*first], point_handle[*second]);

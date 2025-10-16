@@ -2,7 +2,6 @@
 
 use crate::a_star::{NavGraph, NodeState};
 use crate::graph_constructor::GraphConstructor;
-use crate::vector::Vec2;
 use glume::gl;
 use glume::gl::types::*;
 use glume::window::{Event, MouseButton};
@@ -11,7 +10,7 @@ use glume::window::{Event, MouseButton};
 /// If one wants to use pure OpenGL with a different framework than glume this would be the entry point.
 pub struct InteractionCore {
     screen_extension: (f32, f32),
-    cursor_pos: Vec2,
+    cursor_pos: [f32;2],
     shader_program: u32,
     translation: i32,
     color: i32,
@@ -58,7 +57,7 @@ impl InteractionCore {
 
         InteractionCore {
             screen_extension: (100.0, 100.0),
-            cursor_pos: Vec2::new(0.0, 0.0),
+            cursor_pos: [0.0, 0.0],
             shader_program,
             translation,
             color,
@@ -192,10 +191,9 @@ impl InteractionCore {
         }
     }
 
-    fn draw_circle(&self, center: &Vec2, color: &[f32]) {
+    fn draw_circle(&self, center: [f32;2], color: &[f32]) {
         let color_ptr = color.as_ptr();
-        let center_array = center.get_as_array();
-        let position_ptr = center_array.as_ptr();
+        let position_ptr = center.as_ptr();
 
         unsafe {
             // Upload variables.
@@ -205,8 +203,8 @@ impl InteractionCore {
         }
     }
 
-    fn draw_line(&self, start: &Vec2, end: &Vec2, color: &[f32]) {
-        let vertices = start.get_combined_as_array(end);
+    fn draw_line(&self, start: [f32;2], end: [f32;2], color: &[f32]) {
+        let vertices = [start[0], start[1], end[0], end[1]];
         let color_ptr = color.as_ptr();
         let zero_vec = [0.0_f32, 0.0_f32];
         let position_ptr = zero_vec.as_ptr();
@@ -270,16 +268,16 @@ impl InteractionCore {
     /// Function gets called when the mouse cursor has moved. Stores the position and eventually
     /// updates the graph search calculation-
     pub fn set_cursor_pos(&mut self, (x, y): (f32, f32)) {
-        self.cursor_pos = Vec2::new(
+        self.cursor_pos = [
             2.0_f32 * x / self.screen_extension.0 - 1.0_f32,
             1.0 - 2.0_f32 * y / self.screen_extension.1,
-        );
+        ];
 
         // Here we analyze if we have a pick node.
         if let Some(start) = self.node_selected
             && let Some(destination) = self
                 .graph
-                .find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius)
+                .find_nearest_node_with_radius(self.cursor_pos, self.circle_radius)
         {
             self.graph.search_graph(start, destination);
         }
@@ -297,7 +295,7 @@ impl InteractionCore {
     pub fn pick_node(&mut self) {
         if let Some(hit_node) = self
             .graph
-            .find_nearest_node_with_radius(&self.cursor_pos, self.circle_radius)
+            .find_nearest_node_with_radius(self.cursor_pos, self.circle_radius)
         {
             self.node_selected = Some(hit_node);
             self.graph.search_graph(hit_node, hit_node);
