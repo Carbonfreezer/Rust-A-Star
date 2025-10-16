@@ -1,7 +1,7 @@
 //! Provides line functionality, that is used in the creation of graphs.
 
 
-use crate::vector::Vec2;
+use astar_lib::vector::Vec2;
 
 const EPSILON: f32 = 0.00001;
 

@@ -1,11 +1,12 @@
-//! This is the library for the A star algorithm applied to two-dimensional navigation graphs.
-//! It contains several submodules.
-//! [graph_constructor] and [graphics] are mostly helper system to create the interactive application.
-//!
+//! This is the library for the A\*  algorithm applied to two-dimensional navigation graphs.
+//! It comes with an relatively extensive example of an open GL app, you can run 
+//! with "cargo run -r --example openglapp"
+
+
+#![no_std]
+extern crate alloc;
 
 pub mod a_star;
-pub mod graph_constructor;
-pub mod graphics;
+#[doc(hidden)]
 pub mod vector;
 
-pub mod line;

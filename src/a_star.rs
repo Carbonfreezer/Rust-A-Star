@@ -1,6 +1,8 @@
 //! A\* algorithm implemented for two-dimensional nav graphs.
 //!
 use super::vector::Vec2;
+use alloc::vec::Vec;
+
 
 /// A declaration for the current state a node in the nav graph can be in.
 #[derive(Debug, Clone, PartialEq)]
@@ -43,7 +45,7 @@ impl NavNode {
 }
 
 /// The graph structure that may be used for navigation, with all the manipulation and searching
-/// options. Nodes in this graph are supposed here to represent positions in a twi dimensional coordinate
+/// options. Nodes in this graph are supposed here to represent positions in a two-dimensional coordinate
 /// system and the edge annotation is always the distance between those positions.
 pub struct NavGraph {
     nodes: Vec<NavNode>,
@@ -73,6 +75,9 @@ impl NavGraph {
     }
 
     /// Gets an iterator for all the nodes and returns position and the current state.
+    /// The result is meaningful after a graph search has been performed. The use case
+    /// of this method is mainly doing visualizations of the algorithm like performed in the 
+    /// openglapp example.   
     /// # Example
     ///
     /// ```
@@ -96,6 +101,9 @@ impl NavGraph {
     }
 
     /// Gets an iterator all the links consisting of start position, end position and a hint whether this is link is part of the solution.
+    /// The result is meaningful after a graph search has been performed. The use case
+    /// of this method is mainly doing visualizations of the algorithm like performed in the 
+    /// openglapp example.
     /// # Example
     ///
     /// ```
@@ -330,12 +338,12 @@ mod tests {
         let result = result.unwrap();
         assert_eq!(result, [0, 2, 3]);
 
-        for (source, destination, solution) in graph.get_all_links_with_solution_hint() {
-            println!("{:?} -> {:?} : {}", source, destination, solution);
+        for (_source, _destination, _solution) in graph.get_all_links_with_solution_hint() {
+
         }
 
-        for (position, state) in graph.get_all_nodes_with_state() {
-            println!("{:?} : {:?}", position, state);
+        for (_position, _state) in graph.get_all_nodes_with_state() {
+
         }
 
         let result = graph.search_graph(p0, p5);

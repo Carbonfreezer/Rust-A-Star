@@ -1,6 +1,7 @@
 //! Provides basic functionality for two-dimensional vectors.
 
-use std::ops::{Add, Sub};
+use core::ops::{Add, Sub};
+use libm;
 
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
@@ -19,8 +20,8 @@ impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
         Vec2 { x, y }
     }
-    
-    
+
+
     /// Gets the magnitude and a normalized version of this vector in one call.
     ///
     /// # Example
@@ -72,7 +73,7 @@ impl Vec2 {
     /// let size = vec.magnitude();
     /// ```
     pub fn magnitude(&self) -> f32 {
-        (self.x * self.x + self.y * self.y).sqrt()
+       libm::sqrtf(self.x * self.x + self.y * self.y)
     }
 
     /// Computes the distance to another vector.

@@ -1,6 +1,6 @@
 //! This is essentially the core program containing all the OpenGL graphics.
 
-use crate::a_star::{NavGraph, NodeState};
+use astar_lib::a_star::{NavGraph, NodeState};
 use crate::graph_constructor::GraphConstructor;
 use glume::gl;
 use glume::gl::types::*;

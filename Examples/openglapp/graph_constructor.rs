@@ -1,8 +1,8 @@
 //! Helper module to generate an interesting graph.
 
-use super::vector::Vec2;
+use astar_lib::vector::Vec2;
 use super::line::Line;
-use crate::a_star::NavGraph;
+use astar_lib::a_star::NavGraph;
 use rand::seq::IteratorRandom;
 
 /// The maximum number of iterations we make per attempt for link generation
