@@ -1,5 +1,7 @@
 //! A\* algorithm implemented for two-dimensional nav graphs.
 //!
+
+extern crate alloc;
 use super::vector::Vec2;
 use alloc::vec::Vec;
 
@@ -7,13 +9,13 @@ use alloc::vec::Vec;
 /// A declaration for the current state a node in the nav graph can be in.
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeState {
-    /// The node is in its original state unvisited.
+    /// The node is in its original state, unvisited.
     Clear,
     /// The node has been visited, but it is still in the opened state.
     Visited,
-    /// The node has been closed and is therefor completely analyzed.
+    /// The node has been closed and is therefore thoroughly analyzed.
     Closed,
-    /// At the end of the search the nodes are marked as a part of the solution.
+    /// At the end of the search, the nodes are marked as a part of the solution.
     Solution,
 }
 
@@ -28,7 +30,7 @@ struct NavNode {
 }
 
 impl NavNode {
-     fn new(position: Vec2) -> Self {
+    fn new(position: Vec2) -> Self {
         Self {
             position,
             connections: Vec::new(),
@@ -45,8 +47,8 @@ impl NavNode {
 }
 
 /// The graph structure that may be used for navigation, with all the manipulation and searching
-/// options. Nodes in this graph are supposed here to represent positions in a two-dimensional coordinate
-/// system and the edge annotation is always the distance between those positions.
+/// options. Nodes in this graph are supposed to represent positions in a two-dimensional coordinate system
+/// and the edge annotation is always the distance between those positions.
 pub struct NavGraph {
     nodes: Vec<NavNode>,
     links: Vec<(usize, usize)>,
@@ -74,9 +76,9 @@ impl NavGraph {
         }
     }
 
-    /// Gets an iterator for all the nodes and returns position and the current state.
+    /// Gets an iterator for all the nodes and returns the position and the current state.
     /// The result is meaningful after a graph search has been performed. The use case
-    /// of this method is mainly doing visualizations of the algorithm like performed in the 
+    /// of this method is mainly to perform visualizations of the algorithm, as performed in the 
     /// openglapp example.   
     /// # Example
     ///
@@ -100,9 +102,9 @@ impl NavGraph {
             && (self.nodes[*end_node].state == NodeState::Solution)
     }
 
-    /// Gets an iterator all the links consisting of start position, end position and a hint whether this is link is part of the solution.
+    /// Gets an iterator of all the links consisting of start position, end position, and a hint whether this link is part of the solution.
     /// The result is meaningful after a graph search has been performed. The use case
-    /// of this method is mainly doing visualizations of the algorithm like performed in the 
+    /// of this method is mainly to perform visualizations of the algorithm, as performed in the 
     /// openglapp example.
     /// # Example
     ///
@@ -128,7 +130,7 @@ impl NavGraph {
     }
 
     /// Finds the nearest node to the indicated position within a certain
-    /// maximum radius. If there is none it returns none.
+    /// maximum radius. If there is none, it returns none.
     ///
     /// # Example
     /// ```
@@ -215,12 +217,12 @@ impl NavGraph {
         path
     }
 
-    /// Does the real search from the start point to the end point of the graph. This is the real search operation.
+    /// Does the real search from the start point to the end point of the graph. This method is the real search operation.
     /// # Parameters:
     /// * start: The start point to start searching for,
-    /// * end: The end point on the search.
+    /// * end: The end point of the search.
     /// # Returns
-    /// If a path could be found it returns the positions of the path.
+    /// If the algorithm could find a path, it returns the positions of the path; otherwise, it returns None.
     ///
     /// # Example:
     ///

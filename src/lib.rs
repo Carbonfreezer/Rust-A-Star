@@ -4,7 +4,7 @@
 
 
 #![no_std]
-extern crate alloc;
+
 
 pub mod a_star;
 #[doc(hidden)]
