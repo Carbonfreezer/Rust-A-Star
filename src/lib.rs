@@ -1,6 +1,4 @@
-//! This is the library for the A\*  algorithm applied to two-dimensional navigation graphs.
-//! It comes with a relatively extensive example of an open GL app, you can run
-//! with "cargo run -r --example openglapp"
+//! This is the library for the A\*  algorithm applied to two-dimensional navigation graphs as often used in games.
 //!
 //! # General usage.
 //! The application domain of this library is two-dimensional navigation graphs. Every node in this
