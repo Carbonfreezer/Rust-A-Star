@@ -1,6 +1,4 @@
-# Rust A Star
-
-
+# A\* lib
 This is the library for the A\*  algorithm applied to two-dimensional navigation graphs as often used in games.
 
 # General Usage
@@ -44,9 +42,9 @@ if let Some(result) = result {
 ``` 
 
 
-# Examples
-On the [github repo](https://github.com/Carbonfreezer/Rust-A-Star) you can find the source code of the example 
-app *openglapp*. This example app contains several modules:
+# Examples 
+The library comes with the example app *openglapp*.
+This example app contains several modules:
 
 1. **line**: This contains the *Line* class in there that helps with the graph construction.
 2. **graph_constructor**: This is a helper module that generates random graphs that obey a couple of rules to be pretty.
