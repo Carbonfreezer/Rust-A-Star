@@ -174,13 +174,11 @@ impl GraphConstructor {
     pub fn generate_graph(&mut self) -> NavGraph {
         let mut graph = NavGraph::new();
 
-        let point_handle: Vec<usize> = self
-            .point_collection
-            .iter()
-            .map(|position| graph.add_node((*position).into()))
-            .collect();
+        for point in self.point_collection.iter() {
+            graph.add_node((*point).into());
+        }
         for (first, second) in &self.point_pairing {
-            graph.connect_nodes(point_handle[*first], point_handle[*second]);
+            graph.connect_nodes(*first, *second);
         }
         self.point_collection.clear();
         self.point_pairing.clear();

@@ -165,13 +165,17 @@ impl NavGraph {
     }
 
     /// Adds a position to the nav graph and returns a handle index that may be used for
-    /// connecting the nodes.
+    /// connecting the nodes. The returning handles are given in registration sequence and 
+    /// starting from 0. 
     ///
     /// # Example
     /// ```
     /// use astar_lib::a_star::NavGraph;
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node([0.0, 0.0]);
+    /// let p1 = graph.add_node([1.0, 0.0]);
+    /// 
+    /// assert!((p0 == 0) && (p1 == 1), "Illegal sequence of nodes.")
     /// ```
     pub fn add_node(&mut self, position: [f32; 2]) -> usize {
         let ret_val = self.nodes.len();
