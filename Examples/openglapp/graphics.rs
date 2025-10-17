@@ -1,7 +1,7 @@
 //! This is essentially the core program containing all the OpenGL graphics.
 
-use astar_lib::a_star::{NavGraph, NodeState};
 use crate::graph_constructor::GraphConstructor;
+use astar_lib::a_star::{NavGraph, NodeState};
 use glume::gl;
 use glume::gl::types::*;
 use glume::window::{Event, MouseButton};
@@ -10,7 +10,7 @@ use glume::window::{Event, MouseButton};
 /// If one wants to use pure OpenGL with a different framework than glume this would be the entry point.
 pub struct InteractionCore {
     screen_extension: (f32, f32),
-    cursor_pos: [f32;2],
+    cursor_pos: [f32; 2],
     shader_program: u32,
     translation: i32,
     color: i32,
@@ -191,7 +191,7 @@ impl InteractionCore {
         }
     }
 
-    fn draw_circle(&self, center: [f32;2], color: &[f32]) {
+    fn draw_circle(&self, center: [f32; 2], color: &[f32]) {
         let color_ptr = color.as_ptr();
         let position_ptr = center.as_ptr();
 
@@ -203,7 +203,7 @@ impl InteractionCore {
         }
     }
 
-    fn draw_line(&self, start: [f32;2], end: [f32;2], color: &[f32]) {
+    fn draw_line(&self, start: [f32; 2], end: [f32; 2], color: &[f32]) {
         let vertices = [start[0], start[1], end[0], end[1]];
         let color_ptr = color.as_ptr();
         let zero_vec = [0.0_f32, 0.0_f32];

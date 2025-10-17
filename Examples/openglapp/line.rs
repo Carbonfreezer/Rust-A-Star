@@ -1,10 +1,8 @@
 //! Provides line functionality, that is used in the creation of graphs.
 
-
 use astar_lib::vector::Vec2;
 
 const EPSILON: f32 = 0.00001;
-
 
 /// Contains a line segment. can be used for intersection calculation.
 #[derive(Debug, Clone)]
@@ -15,7 +13,6 @@ pub struct Line {
     unit_delta: Vec2,
     orthogonal: Vec2,
 }
-
 
 impl Line {
     /// Creates a new line.
@@ -91,7 +88,6 @@ impl Line {
 mod tests {
     use super::*;
 
-
     #[test]
     fn line_test() {
         let line_a = Line::new(Vec2::new(0.0, 0.0), Vec2::new(1.0, 1.0));
@@ -103,4 +99,3 @@ mod tests {
         assert!(!intersect);
     }
 }
-

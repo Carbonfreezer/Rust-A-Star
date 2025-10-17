@@ -19,6 +19,20 @@ pub enum NodeState {
     Solution,
 }
 
+/// Contains enums for the diverse error types, that may happen in combination
+/// with connecting and disconnecting nodes.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ConnectionError {
+    /// May happen during a connection attempt.  The usize contains the node index that does not exist.
+    NodeDoesntExist(usize),
+    /// May happen during a connection attempt if the two indices handed over are the same.
+    NodeDoubled,
+    /// May happen during a connection attempt, because this link already exists.
+    LinkAlreadyExists,
+    /// May happen during a disconnection attempt, because the link does not exist.
+    LinkDoesntExist,
+}
+
 #[derive(Debug, Clone)]
 struct NavNode {
     position: Vec2,
@@ -165,8 +179,8 @@ impl NavGraph {
     }
 
     /// Adds a position to the nav graph and returns a handle index that may be used for
-    /// connecting the nodes. The returning handles are given in registration sequence and 
-    /// starting from 0. 
+    /// connecting the nodes. The returning handles are given in registration sequence and
+    /// starting from 0.
     ///
     /// # Example
     /// ```
@@ -174,7 +188,7 @@ impl NavGraph {
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node([0.0, 0.0]);
     /// let p1 = graph.add_node([1.0, 0.0]);
-    /// 
+    ///
     /// assert!((p0 == 0) && (p1 == 1), "Illegal sequence of nodes.")
     /// ```
     pub fn add_node(&mut self, position: [f32; 2]) -> usize {
@@ -183,7 +197,29 @@ impl NavGraph {
         ret_val
     }
 
+    /// Gets the index of the link of the indicated node pairing. Returns None if it does not exist.
+    fn get_link_index(&self, node1: usize, node2: usize) -> Option<usize> {
+        if let Some(result) = self
+            .links
+            .iter()
+            .position(|element| *element == (node1, node2))
+        {
+            return Some(result);
+        } else if let Some(result) = self
+            .links
+            .iter()
+            .position(|element| *element == (node2, node1))
+        {
+            return Some(result);
+        }
+        None
+    }
+
     /// Connects two graph nodes with indicated indices.
+    ///
+    /// # Error
+    /// For the case, that nodes do not exist, that indices handed over are the same, or that such a link has already been
+    /// established an error is returned.
     ///
     /// # Example
     /// ```
@@ -191,11 +227,23 @@ impl NavGraph {
     /// let mut graph = NavGraph::new();
     /// let p0 = graph.add_node([0.0, 0.0]);
     /// let p1 = graph.add_node([1.0, 1.0]);
-    /// graph.connect_nodes(p0, p1);
+    /// graph.connect_nodes(p0, p1).unwrap();
     /// ```
-    pub fn connect_nodes(&mut self, node1: usize, node2: usize) {
-        assert!(node1 < self.nodes.len(), "Node 1 does not exist");
-        assert!(node2 < self.nodes.len(), "Node 2 does not exist");
+    pub fn connect_nodes(&mut self, node1: usize, node2: usize) -> Result<(), ConnectionError> {
+        if node1 == node2 {
+            return Err(ConnectionError::NodeDoubled);
+        }
+
+        if node1 > self.nodes.len() {
+            return Err(ConnectionError::NodeDoesntExist(node1));
+        }
+
+        if node2 > self.nodes.len() {
+            return Err(ConnectionError::NodeDoesntExist(node2));
+        }
+        if self.get_link_index(node1, node2).is_some() {
+            return Err(ConnectionError::LinkAlreadyExists);
+        }
 
         let dist = self.nodes[node1]
             .position
@@ -203,6 +251,43 @@ impl NavGraph {
         self.nodes[node1].connections.push((node2, dist));
         self.nodes[node2].connections.push((node1, dist));
         self.links.push((node1, node2));
+
+        Ok(())
+    }
+
+    /// Removes an already existing connection between two nodes.
+    /// In the case of a game this would be a closing door.
+    ///
+    /// # Error
+    /// Returns an error, if the link does not exist.
+    ///
+    /// # Example
+    /// ```
+    /// use astar_lib::a_star::NavGraph;
+    /// let mut graph = NavGraph::new();
+    /// let p0 = graph.add_node([0.0, 0.0]);
+    /// let p1 = graph.add_node([1.0, 1.0]);
+    /// graph.connect_nodes(p0, p1).unwrap();
+    /// graph.disconnect_nodes(p1, p0).unwrap();
+    pub fn disconnect_nodes(&mut self, node1: usize, node2: usize) -> Result<(), ConnectionError> {
+        if let Some(link) = self.get_link_index(node1, node2) {
+            self.links.remove(link);
+
+            let first_ind = self.nodes[node1]
+                .connections
+                .iter()
+                .position(|(element, _)| *element == node2)
+                .unwrap();
+            self.nodes[node1].connections.swap_remove(first_ind);
+            let second_ind = self.nodes[node2]
+                .connections
+                .iter()
+                .position(|(element, _)| *element == node1)
+                .unwrap();
+            self.nodes[node2].connections.swap_remove(second_ind);
+            return Ok(());
+        }
+        Err(ConnectionError::LinkDoesntExist)
     }
 
     fn reset_graph_search(&mut self) {
@@ -244,12 +329,12 @@ impl NavGraph {
     ///  let p2 = graph.add_node([1.0, 0.0]);
     ///  let p3 = graph.add_node([1.0, 1.0]);
     ///  let p4 = graph.add_node([0.1, 0.0]);
-    ///  graph.connect_nodes(p0, p1);
-    ///  graph.connect_nodes(p1, p2);
-    ///  graph.connect_nodes(p0, p2);
-    ///  graph.connect_nodes(p1, p4);
-    ///  graph.connect_nodes(p4, p3);
-    ///  graph.connect_nodes(p2, p3);
+    ///  graph.connect_nodes(p0, p1).unwrap();
+    ///  graph.connect_nodes(p1, p2).unwrap();
+    ///  graph.connect_nodes(p0, p2).unwrap();
+    ///  graph.connect_nodes(p1, p4).unwrap();
+    ///  graph.connect_nodes(p4, p3).unwrap();
+    ///  graph.connect_nodes(p2, p3).unwrap();
     ///
     ///  let result = graph.search_graph(p0, p3);
     ///
@@ -336,12 +421,15 @@ mod tests {
         let p4 = graph.add_node([0.1, 0.0]);
         let p5 = graph.add_node([2.0, 2.0]);
 
-        graph.connect_nodes(p0, p1);
-        graph.connect_nodes(p1, p2);
-        graph.connect_nodes(p0, p2);
-        graph.connect_nodes(p1, p4);
-        graph.connect_nodes(p4, p3);
-        graph.connect_nodes(p2, p3);
+        graph.connect_nodes(p0, p1).unwrap();
+        graph.connect_nodes(p1, p2).unwrap();
+        graph.connect_nodes(p0, p2).unwrap();
+        graph.connect_nodes(p1, p4).unwrap();
+        graph.connect_nodes(p4, p3).unwrap();
+        graph.connect_nodes(p2, p3).unwrap();
+
+        let double_con_test = graph.connect_nodes(p1, p0);
+        assert_eq!(double_con_test, Err(ConnectionError::LinkAlreadyExists));
 
         let result = graph.search_graph(p0, p3);
         assert!(result.is_some());
@@ -368,5 +456,16 @@ mod tests {
 
         let result = graph.search_graph(p0, p5);
         assert!(result.is_none(), "There should not be a solution!");
+
+        graph.disconnect_nodes(p3, p2).unwrap();
+        let result = graph.search_graph(p0, p3).unwrap();
+        assert_eq!(result, [0, 1, 4, 3]);
+
+        let test = graph.disconnect_nodes(p3, p2);
+        assert_eq!(
+            test,
+            Err(ConnectionError::LinkDoesntExist),
+            "Should not work"
+        );
     }
 }

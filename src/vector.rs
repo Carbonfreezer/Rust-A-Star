@@ -2,7 +2,6 @@
 
 use std::ops::{Add, Sub};
 
-
 /// Contains a two dimensional vector.
 #[derive(Debug, Copy, Clone)]
 pub struct Vec2 {
@@ -20,7 +19,6 @@ impl Vec2 {
     pub fn new(x: f32, y: f32) -> Vec2 {
         Vec2 { x, y }
     }
-
 
     /// Gets the magnitude and a normalized version of this vector in one call.
     ///
@@ -73,7 +71,7 @@ impl Vec2 {
     /// let size = vec.magnitude();
     /// ```
     pub fn magnitude(&self) -> f32 {
-       (self.x * self.x + self.y * self.y).sqrt()
+        (self.x * self.x + self.y * self.y).sqrt()
     }
 
     /// Computes the distance to another vector.
@@ -109,20 +107,17 @@ impl Sub for Vec2 {
     }
 }
 
-impl From<[f32;2]> for Vec2 {
-    fn from(v: [f32;2]) -> Vec2
-    {
-        Vec2{x: v[0], y: v[1]}
+impl From<[f32; 2]> for Vec2 {
+    fn from(v: [f32; 2]) -> Vec2 {
+        Vec2 { x: v[0], y: v[1] }
     }
 }
 
-impl From<Vec2> for [f32;2] {
-    fn from(v: Vec2) -> [f32; 2]
-    {
+impl From<Vec2> for [f32; 2] {
+    fn from(v: Vec2) -> [f32; 2] {
         [v.x, v.y]
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -135,6 +130,4 @@ mod tests {
         let dist = vec_a.dist_to(&vec_b);
         assert!((dist - (2.0_f32).sqrt()).abs() < 0.00000000001);
     }
-
-
 }

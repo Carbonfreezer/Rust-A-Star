@@ -1,11 +1,8 @@
 //! This is the library for the A\*  algorithm applied to two-dimensional navigation graphs.
-//! It comes with an relatively extensive example of an open GL app, you can run 
+//! It comes with an relatively extensive example of an open GL app, you can run
 //! with "cargo run -r --example openglapp"
 
-
 pub mod a_star;
+pub mod prelude;
 #[doc(hidden)]
 pub mod vector;
-
-pub use a_star::{NodeState, NavGraph};
-

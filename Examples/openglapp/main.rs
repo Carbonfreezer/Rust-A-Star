@@ -1,8 +1,7 @@
 //! This is a simple module that only provides an entry point to get a program out of the library.
 
-
-pub mod graphics;
 pub mod graph_constructor;
+pub mod graphics;
 pub mod line;
 
 extern crate astar_lib;

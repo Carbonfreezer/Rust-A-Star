@@ -1,8 +1,8 @@
 //! Helper module to generate an interesting graph.
 
-use astar_lib::vector::Vec2;
 use super::line::Line;
 use astar_lib::a_star::NavGraph;
+use astar_lib::vector::Vec2;
 use rand::seq::IteratorRandom;
 
 /// The maximum number of iterations we make per attempt for link generation
@@ -178,7 +178,7 @@ impl GraphConstructor {
             graph.add_node((*point).into());
         }
         for (first, second) in &self.point_pairing {
-            graph.connect_nodes(*first, *second);
+            graph.connect_nodes(*first, *second).unwrap();
         }
         self.point_collection.clear();
         self.point_pairing.clear();
