@@ -19,5 +19,5 @@ name = "astar_lib"
 name = "openglapp"
 
 include = [
-    "examples/**/*.rs",  # Alle Rust samples
+    "examples/openglapp/*.rs",  # Alle Rust samples
 ]
