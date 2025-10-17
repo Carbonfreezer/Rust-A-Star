@@ -3,6 +3,5 @@
 //! with "cargo run -r --example openglapp"
 
 pub mod a_star;
-pub mod prelude;
 #[doc(hidden)]
 pub mod vector;
