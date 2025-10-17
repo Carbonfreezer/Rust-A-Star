@@ -1,9 +1,7 @@
 # Rust A Star
 
 
-This is the library for the A\*  algorithm applied to two-dimensional navigation graphs.
-It comes with a relatively extensive example of an open GL app, you can run
-with "cargo run -r --example openglapp"
+This is the library for the A\*  algorithm applied to two-dimensional navigation graphs as often used in games.
 
 # General Usage
 The application domain of this library is two-dimensional navigation graphs. Every node in this
@@ -47,8 +45,8 @@ if let Some(result) = result {
 
 
 # Examples
-The library comes with the example app *openglapp*.
-This example app contains several modules:
+On the [github repo](https://github.com/Carbonfreezer/Rust-A-Star) you can find the source code of the example 
+app *openglapp*. This example app contains several modules:
 
 1. **line**: This contains the *Line* class in there that helps with the graph construction.
 2. **graph_constructor**: This is a helper module that generates random graphs that obey a couple of rules to be pretty.
@@ -70,35 +68,6 @@ We show an example in the following image:
     <img src="graph_shot.png" alt="Image of the graph" width="600" height="600">
     <figcaption>Screenshot of the A Star Program</figcaption>
 </figure>
-
-# Getting Started with Rust
-If you are new to Rust, here is a quick start:
-
-1. Install Rust
-2. Build, run, and test the various components.
-
-## Install Rust
-For *Linux* and *MacOS* users, open a terminal and enter the following command:
-```
-curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
-```
-For *Windows* users, get to the website
-[Windows Installer](https://www.rust-lang.org/tools/install).
-
-In both cases, you will wind up with mainly three programs:
-- **rustup**: This is the installer and updater.
-- **rustc**: This is the core compiler of the Rust language. You will rarely interface with it directly.
-- **cargo**: This program contains the package manager (something like PiPy in Python) and a complete build system.
-  This program is the central entry to the Rust world.
-
-## Build, Run, and Test the various components
-Once you have installed Rust, clone the directory from the repository, open a terminal, and navigate to the base directory
-where the file *Cargo.toml* is contained. From here, you may now run several commands:
-
-- **cargo test**: This builds the program and runs all contained unit tests.
-- **cargo doc --open**: Generates and opens the documentation in the browser.
-- **cargo run -r --example openglapp** : Start the app.
-
 
 
 # License
