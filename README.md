@@ -67,6 +67,34 @@ We show an example in the following image:
     <figcaption>Screenshot of the A Star Program</figcaption>
 </figure>
 
+# Getting Started with Rust
+If you are new to Rust, here is a quick start:
+
+1. Install Rust
+2. Build, run, and test the various components.
+
+## Install Rust
+For *Linux* and *MacOS* users, open a terminal and enter the following command:
+```
+curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
+```
+For *Windows* users, get to the website
+[Windows Installer](https://www.rust-lang.org/tools/install).
+
+In both cases, you will wind up with mainly three programs:
+- **rustup**: This is the installer and updater.
+- **rustc**: This is the core compiler of the Rust language. You will rarely interface with it directly.
+- **cargo**: This program contains the package manager (something like PiPy in Python) and a complete build system.
+  This program is the central entry to the Rust world.
+
+## Build, Run, and Test the various components
+Once you have installed Rust, clone the directory from the repository, open a terminal, and navigate to the base directory
+where the file *Cargo.toml* is contained. From here, you may now run several commands:
+
+- **cargo test**: This builds the program and runs all contained unit tests.
+- **cargo doc --open**: Generates and opens the documentation in the browser.
+- **cargo run -r --example openglapp** : Start the app.
+
 
 # License
 The program is published under the MIT license as explained in the [license file](LICENSE).
