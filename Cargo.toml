@@ -17,3 +17,7 @@ name = "astar_lib"
 
 [[example]]
 name = "openglapp"
+
+include = [
+    "examples/**/*.rs",  # Alle Rust samples
+]
