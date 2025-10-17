@@ -1,4 +1,4 @@
-//! Helper module to generate an interesting graph.
+//! The module creates a pretty graph without intersecting edges.
 
 use super::line::Line;
 use astar_lib::a_star::NavGraph;

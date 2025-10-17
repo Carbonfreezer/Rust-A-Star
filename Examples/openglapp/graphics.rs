@@ -1,4 +1,4 @@
-//! This is essentially the core program containing all the OpenGL graphics.
+//! This is the main module responsible for graphical operations in OpenGL and interaction.
 
 use crate::graph_constructor::GraphConstructor;
 use astar_lib::a_star::{NavGraph, NodeState};

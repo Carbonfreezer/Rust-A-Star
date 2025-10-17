@@ -1,12 +1,15 @@
 //! A\* algorithm implemented for two-dimensional nav graphs.
-//! The typical use case of this algorithm is navigation  in games.
+//! The typical use case of this algorithm is navigation in games.
 //!
 
 use super::vector::Vec2;
 
 /// A declaration for the current state a node in the nav graph can be in.
 /// This is relevant for the method *get_all_nodes_with_state*, which is
-/// relevant for analyzing the behaviour of the algorithm.
+/// relevant for analyzing the behavior of the algorithm.
+///
+/// Chances are, you will not need this unless you want to make a debug visualization
+/// of your nav graph. It is only used in method [`NavGraph::get_all_nodes_with_state`].
 #[derive(Debug, Clone, PartialEq)]
 pub enum NodeState {
     /// The node is in its original state, unvisited.
@@ -19,8 +22,9 @@ pub enum NodeState {
     Solution,
 }
 
-/// Contains enums for the diverse error types, that may happen in combination
-/// with connecting and disconnecting nodes.
+/// Contains enums for the diverse error types that may happen in combination
+/// with connecting and disconnecting nodes. They are relevant for the methods:
+/// [`NavGraph::connect_nodes`] and [`NavGraph::disconnect_nodes`]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConnectionError {
     /// May happen during a connection attempt.  The usize contains the node index that does not exist.
@@ -93,7 +97,7 @@ impl NavGraph {
     /// Gets an iterator for all the nodes and returns the position and the current state.
     /// The result is meaningful after a graph search has been performed. The use case
     /// of this method is mainly to perform visualizations of the algorithm, as performed in the
-    /// openglapp example.   
+    /// openglapp example.
     /// # Example
     ///
     /// ```
@@ -218,8 +222,8 @@ impl NavGraph {
     /// Connects two graph nodes with indicated indices.
     ///
     /// # Error
-    /// For the case, that nodes do not exist, that indices handed over are the same, or that such a link has already been
-    /// established an error is returned.
+    /// For the case that nodes do not exist, that indices handed over are the same, or that such a link has already been
+    /// established that an error is returned.
     ///
     /// # Example
     /// ```
@@ -256,10 +260,10 @@ impl NavGraph {
     }
 
     /// Removes an already existing connection between two nodes.
-    /// In the case of a game this would be a closing door.
+    /// In the case of a game, this would be a closing door.
     ///
     /// # Error
-    /// Returns an error, if the link does not exist.
+    /// Returns an error if the link does not exist.
     ///
     /// # Example
     /// ```
@@ -356,7 +360,7 @@ impl NavGraph {
         todo_list.push(start_index);
 
         loop {
-            // In this case there is no path we return none.
+            // In this case, there is no path, so we return none.
             let (best_index, best_candidate) = todo_list.iter().enumerate().min_by(|a, b| {
                 self.nodes[*a.1]
                     .f_value

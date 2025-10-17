@@ -1,4 +1,5 @@
-//! This is a simple module that only provides an entry point to get a program out of the library.
+//! This is an interactive OpenGL app, that demonstrates the functionality of the library.
+//!
 
 pub mod graph_constructor;
 pub mod graphics;

@@ -1,26 +1,58 @@
 # Rust A Star
 
-## Overview
-This Rust project contains the library *astar_lib*. It implements the A* algorithm.
-The graph is supposed to be a navigation graph. Every node represents a position in two-dimensional coordinates, and
-the edge annotation is the distance between the two nodes that are connected via an edge. This is an
-algorithm that is used in games.
 
-The library comes with a relatively extensive example in the form of an OpenGL app *openglapp*.
-It contains a construction system for
-suitable graphs and an OpenGL visualization. The project comes with complete documentation and a unit test suite.
+This is the library for the A\*  algorithm applied to two-dimensional navigation graphs.
+It comes with a relatively extensive example of an open GL app, you can run
+with "cargo run -r --example openglapp"
 
-## Contents
-The library *astar_lib* contains the module **a_star**, which includes the search algorithm in the class *NavGraph*.
-This lib also contains an undocumented **vector** module, which is used internally and by the example app.
+# General Usage
+The application domain of this library is two-dimensional navigation graphs. Every node in this
+graph represents a two-dimensional position. When nodes are connected with an edge, the edge gets
+annotated with the Euclidean distance between these two nodes. The library provides functionalities to add nodes
+and to add and remove edges. The latter may be helpful in game applications when the world, and therefore the navigation options, change.
+The main functionality of the system is to deliver the shortest path between two specified positions.
 
-The example app contains several modules:
+For debug and visualization purposes, the nodes and edges with their respective state can also be queried from the outside.
+Also, a node within a certain distance of an indicated point may be queried, which can be used for picking
+applications.
+
+Two-dimensional coordinates are always represented as a **\[f32,2\]** in the interface of the program.
+
+
+# Example
+A simplistic example to use the program looks like this:
+
+```
+use astar_lib::a_star::NavGraph;
+let mut graph = NavGraph::new();
+let p0 = graph.add_node([0.0, 0.0]);
+let p1 = graph.add_node([0.5, 0.5]);
+let p2 = graph.add_node([1.0, 0.0]);
+let p3 = graph.add_node([1.0, 1.0]);
+let p4 = graph.add_node([0.1, 0.0]);
+graph.connect_nodes(p0, p1).unwrap();
+graph.connect_nodes(p1, p2).unwrap();
+graph.connect_nodes(p0, p2).unwrap();
+graph.connect_nodes(p1, p4).unwrap();
+graph.connect_nodes(p4, p3).unwrap();
+graph.connect_nodes(p2, p3).unwrap();
+
+let result = graph.search_graph(p0, p3);
+
+if let Some(result) = result {
+     for pos in result.iter() {
+          println!("{:?}", pos);
+} }
+``` 
+
+
+# Examples
+The library comes with the example app *openglapp*.
+This example app contains several modules:
 
 1. **line**: This contains the *Line* class in there that helps with the graph construction.
 2. **graph_constructor**: This is a helper module that generates random graphs that obey a couple of rules to be pretty.
 3. **graphics**: This module does the visualization with OpenGL and the basic interaction.
-
-## Program Usage
 
 To start the demo app, use
 
@@ -40,34 +72,5 @@ We show an example in the following image:
 </figure>
 
 
-## Getting Started with Rust
-If you are new to Rust (like I was a couple of days ago), here is a quick start:
-
-1. Install Rust
-2. Build, run, and test the various components.
-
-### Install Rust
-For *Linux* and *MacOS* users, open a terminal and enter the following command:
-```
-curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
-```
-For *Windows* users, get to the website
-[Windows Installer](https://www.rust-lang.org/tools/install).
-
-In both cases, you will wind up with mainly three programs:
-- **rustup**: This is the installer and updater.
-- **rustc**: This is the core compiler of the Rust language. You will rarely interface with it directly.
-- **cargo**: This program contains the package manager (something like PiPy in Python) and a complete build system.
-  This program is the central entry to the Rust world.
-
-### Build, Run, and Test the various components
-Once you have installed Rust, clone the directory from the repository, open a terminal, and navigate to the base directory
-where the file *Cargo.toml* is contained. From here, you may now run several commands:
-
-- **cargo test**: This builds the program and runs all contained unit tests.
-- **cargo doc --open**: Generates and opens the documentation in the browser.
-- **cargo run -r --example openglapp** : Start the app.
-
-## License
+# License
 The program is published under the MIT license as explained in the [license file](LICENSE).
-

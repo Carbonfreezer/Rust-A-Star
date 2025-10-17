@@ -1,4 +1,4 @@
-//! Provides line functionality, that is used in the creation of graphs.
+//! This is a helper module for edge validity checks in graph construction.
 
 use astar_lib::vector::Vec2;
 
